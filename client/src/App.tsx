@@ -37,7 +37,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = (loggedInUser: SessionUser & { token: string }) => {
-    console.log("User logged in:", loggedInUser);
+    console.log("User logged in:", loggedInUser.name);
     localStorage.setItem("userId", loggedInUser._id);
     localStorage.setItem("token", loggedInUser.token);
     localStorage.setItem("userName", loggedInUser.name);

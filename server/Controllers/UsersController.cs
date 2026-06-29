@@ -51,9 +51,15 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
+        var callerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (callerId != id && !User.IsInRole("Admin"))
+        {
+            throw ApiException.Forbidden("You can only access your own profile.");
+        }
         var user = await _service.GetByIdAsync(id);
         return Ok(ApiResponse<object>.Ok(user));
     }

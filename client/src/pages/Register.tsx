@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
 import api from "../services/api";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
@@ -63,15 +65,22 @@ function Register({ onLogin }: RegisterProps) {
   const isStep2Valid = password === confirmPassword && password.length >= 8;
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-brown-500">
-      <div className="bg-white rounded-3xl shadow-lg w-full max-w-[804px] px-8 sm:px-16 py-12 mt-[80px]">
-        <form onSubmit={handleRegister} className="space-y-[40px]">
-          <p className="text-dm-base font-DM Sans mt-2 text-left font-semibold text-brown-900">
+    <Container
+      fluid
+      className="d-flex align-items-center justify-content-center bg-brown-500"
+      style={{ minHeight: "100vh" }}
+    >
+      <div
+        className="bg-white rounded-4 shadow-lg w-100 px-4 px-sm-5 py-5"
+        style={{ maxWidth: "804px", marginTop: "80px" }}
+      >
+        <Form onSubmit={handleRegister} className="d-flex flex-column gap-5">
+          <p className="fs-dm-base font-dm-sans mt-2 text-start fw-semibold text-brown-900">
             STEP {currentStep} IN 2
           </p>
-          <h2 className="text-display-3 text-heading-black font-bold text-left">
+          <h2 className="fs-display-3 text-heading-black fw-bold text-start">
             Create a{" "}
-            <span className="block">
+            <span className="d-block">
               <span className="text-orange-500">Furnitech</span>{" "}
               <span className="text-heading-black">Account.</span>
             </span>
@@ -79,8 +88,8 @@ function Register({ onLogin }: RegisterProps) {
 
           {/* Step 1 */}
           {currentStep === 1 && (
-            <div className="space-y-4">
-              <div className="flex space-x-4">
+            <div className="d-flex flex-column gap-3">
+              <div className="d-flex gap-3">
                 <FormInput
                   label="First Name"
                   type="firstName"
@@ -88,7 +97,7 @@ function Register({ onLogin }: RegisterProps) {
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="First Name"
                   required
-                  className="border-b-2 focus:ring-0"
+                  className="border-bottom border-2"
                 />
                 <FormInput
                   label="Last Name"
@@ -97,7 +106,7 @@ function Register({ onLogin }: RegisterProps) {
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Last Name"
                   required
-                  className="border-b-2 focus:ring-0"
+                  className="border-bottom border-2"
                 />
               </div>
               <FormInput
@@ -107,7 +116,7 @@ function Register({ onLogin }: RegisterProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
               <FormInput
                 label="Phone Number"
@@ -116,7 +125,7 @@ function Register({ onLogin }: RegisterProps) {
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Enter your phone number"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
               <FormInput
                 label="Address"
@@ -125,27 +134,27 @@ function Register({ onLogin }: RegisterProps) {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Enter your address"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
             </div>
           )}
 
           {/* Step 2 */}
           {currentStep === 2 && (
-            <div className="space-y-4">
+            <div className="d-flex flex-column gap-3">
               <PasswordInput
                 label="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
-              <div className="space-y-2">
-                <p className="text-sm font-DM Sans text-gray-500 font-semibold">
+              <div className="d-flex flex-column gap-2">
+                <p className="small font-dm-sans text-gray fw-semibold mb-0">
                   Make sure your password contain
                 </p>
-                <ul className="list-disc text-sm font-DM Sans text-gray-500 space-y-1 pl-5">
+                <ul className="small font-dm-sans text-gray d-flex flex-column gap-1 ps-4 mb-0">
                   <li>Minimum of 8 characters</li>
                   <li>At least one UPPERCASE letter</li>
                   <li>At least one lowercase letter</li>
@@ -159,7 +168,7 @@ function Register({ onLogin }: RegisterProps) {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
             </div>
           )}
@@ -169,7 +178,6 @@ function Register({ onLogin }: RegisterProps) {
             <Button
               text="Next"
               onClick={() => setCurrentStep(2)}
-              className="w-full"
               disabled={!isStep1Valid}
             />
           )}
@@ -178,24 +186,23 @@ function Register({ onLogin }: RegisterProps) {
             <Button
               text="Register"
               type="submit"
-              className="w-full"
               disabled={!isStep2Valid}
             />
           )}
 
-          <p className="text-dm-base font-DM Sans mt-2 text-center font-semibold text-neutral-text-gray">
+          <p className="fs-dm-base font-dm-sans mt-2 text-center fw-semibold text-neutral-text-gray">
             Already have a Furnitech account?{" "}
             <button
               onClick={handleLoginRedirect}
-              className="text-orange-500 underline font-bold"
+              className="text-orange-500 text-decoration-underline fw-bold border-0 bg-transparent"
               type="button"
             >
               Login now
             </button>
           </p>
-        </form>
+        </Form>
       </div>
-    </div>
+    </Container>
   );
 }
 

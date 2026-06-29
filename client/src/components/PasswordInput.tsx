@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Form from "react-bootstrap/Form";
 
 interface PasswordInputProps {
   label: string;
@@ -25,34 +26,28 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
   };
 
   return (
-    <div className="space-y-2">
-      <label className="text-lg text-neutral-text-gray font-DM Sans font-semibold">
+    <Form.Group className="mb-2">
+      <Form.Label className="fs-5 text-neutral-text-gray font-dm-sans fw-semibold">
         {label}
-      </label>
-      <div className="relative">
-        <input
+      </Form.Label>
+      <div className="position-relative">
+        <Form.Control
           type={showPassword ? "text" : "password"}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
           required={required}
-          className={`w-full px-6 py-4
-          border border-brown-700 rounded-lg
-          text-lg text-brown-1000 focus:text-heading-black
-          focus:outline-none focus:ring-1 focus:ring-brown-900 focus:border-brown-900
-          bg-brown-300 focus:bg-brown-500
-          transition-all duration-300 ease-out
-        ${className}`}
+          className={`form-control-brand ${className}`}
         />
         <button
           type="button"
           onClick={togglePasswordVisibility}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-brown-1000 text-2xl"
+          className="position-absolute top-50 end-0 me-3 translate-middle-y text-brown-1000 fs-4 bg-transparent border-0"
         >
           {!showPassword ? <FaEyeSlash /> : <FaEye />}
         </button>
       </div>
-    </div>
+    </Form.Group>
   );
 };
 

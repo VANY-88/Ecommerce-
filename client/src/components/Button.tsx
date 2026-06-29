@@ -1,4 +1,5 @@
 import React from "react";
+import BsButton from "react-bootstrap/Button";
 
 interface ButtonProps {
   text: string;
@@ -17,30 +18,21 @@ const Button: React.FC<ButtonProps> = ({
   disabled = false,
   variant = "primary",
 }) => {
-  const baseStyles =
-    "w-full py-4 rounded-[40px] transition-all duration-300 ease-out text-dm-base font-DM Sans font-semibold";
-  const primaryStyles =
-    "bg-heading-black text-white hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500";
-  const secondaryStyles =
-    "bg-white text-heading-black hover:bg-orange-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
-
-  const disabledStyles = "bg-brown-700 cursor-not-allowed text-white";
-
-  const appliedStyles = disabled
-    ? disabledStyles
+  const variantClass = disabled
+    ? "btn-brand-disabled"
     : variant === "secondary"
-    ? secondaryStyles
-    : primaryStyles;
+    ? "btn-brand-secondary"
+    : "btn-brand-primary";
 
   return (
-    <button
+    <BsButton
       type={type}
       onClick={onClick}
-      className={`${baseStyles} ${appliedStyles} ${className}`}
       disabled={disabled}
+      className={`w-100 rounded-pill py-3 fs-dm-base font-dm-sans fw-semibold border-0 ${variantClass} ${className}`}
     >
       {text}
-    </button>
+    </BsButton>
   );
 };
 

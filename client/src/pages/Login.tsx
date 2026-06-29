@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
 import api from "../services/api";
 import FormInput from "../components/FormInput";
 import PasswordInput from "../components/PasswordInput";
@@ -47,20 +49,32 @@ function Login({ onLogin }: LoginProps) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-brown-500 px-4">
-      <div className="flex bg-white rounded-3xl shadow-lg w-full max-w-[1020px] mt-[80px]">
+    <Container
+      fluid
+      className="d-flex align-items-center justify-content-center bg-brown-500 px-4"
+      style={{ minHeight: "100vh" }}
+    >
+      <div
+        className="d-flex bg-white rounded-4 shadow-lg w-100"
+        style={{ maxWidth: "1020px", marginTop: "80px" }}
+      >
         <div
-          className="hidden md:block w-1/2 bg-cover bg-center rounded-l-3xl"
-          style={{ backgroundImage: "url(./assets/loginImage.webp)" }}
+          className="d-none d-md-block rounded-start-4"
+          style={{
+            width: "50%",
+            backgroundImage: "url(./assets/loginImage.webp)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
         ></div>
-        <div className="w-full md:w-1/2 py-16 md:py-28 px-8 md:px-16">
-          <form className="space-y-[40px]" onSubmit={handleLogin}>
-            <h2 className="text-display-3 text-heading-black font-bold">
+        <div className="w-100 col-md-6 py-5 py-md-5 px-4 px-md-5">
+          <Form onSubmit={handleLogin} className="d-flex flex-column gap-5">
+            <h2 className="fs-display-3 text-heading-black fw-bold">
               Login to your{" "}
-              <span className=" text-orange-500"> Furnitech </span>
+              <span className="text-orange-500"> Furnitech </span>
               account.
             </h2>
-            <div className="space-y-4">
+            <div className="d-flex flex-column gap-3">
               <FormInput
                 type="email"
                 label="Email"
@@ -68,7 +82,7 @@ function Login({ onLogin }: LoginProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
               <PasswordInput
                 label="Password"
@@ -76,24 +90,24 @@ function Login({ onLogin }: LoginProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
             </div>
-            <Button type="submit" text="Login" className="w-full" />
-            <p className="text-dm-base font-DM Sans mt-2 text-center font-semibold text-neutral-text-gray">
+            <Button type="submit" text="Login" />
+            <p className="fs-dm-base font-dm-sans mt-2 text-center fw-semibold text-neutral-text-gray">
               Don't have an account?{" "}
               <button
                 onClick={handleRegisterRedirect}
-                className="text-orange-500 underline font-bold"
+                className="text-orange-500 text-decoration-underline fw-bold border-0 bg-transparent"
                 type="button"
               >
                 Register here
               </button>
             </p>
-          </form>
+          </Form>
         </div>
       </div>
-    </div>
+    </Container>
   );
 }
 

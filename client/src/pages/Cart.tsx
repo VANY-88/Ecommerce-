@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Button from "../components/Button";
 import CartItemRow from "../components/CartItem";
 import api from "../services/api";
@@ -91,7 +93,7 @@ function Cart() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
         Loading...
       </div>
     );
@@ -99,76 +101,86 @@ function Cart() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-500">
+      <div className="min-vh-100 d-flex align-items-center justify-content-center text-red">
         Error: {error}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col lg:flex-row justify-between min-h-screen max-h-fit bg-brown-500 px-4 md:px-10 lg:px-20 xl:px-[120px] py-[80px] md:py-[120px] gap-6">
+    <Row
+      className="justify-content-between mx-0 bg-brown-500 px-3 px-md-4 px-lg-5 g-3"
+      style={{ minHeight: "100vh", paddingBottom: 80 }}
+    >
       {/* Cart Section */}
-      <div className="w-full lg:w-2/3 bg-white rounded-3xl min-h-[474px] max-h-fit shadow-md p-8 space-y-6">
-        <h2 className="text-display-4 text-heading-black font-bold font-DM Sans">
-          Your <span className="text-orange-500">Cart</span>
-        </h2>
-        {cartItems.length > 0 ? (
-          <div className="space-y-4">
-            {cartItems.map((item) => (
-              <CartItemRow
-                key={item.id}
-                item={item}
-                onQuantityChange={handleQuantityChange}
-                onRemoveItem={handleRemoveItem}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500">Your cart is empty.</p>
-        )}
-      </div>
+      <Col xs={12} lg={8}>
+        <div
+          className="w-100 bg-white rounded-4 shadow-sm p-4 d-flex flex-column gap-4"
+          style={{ minHeight: 474 }}
+        >
+          <h2 className="fs-display-4 text-heading-black fw-bold font-dm-sans mb-0">
+            Your <span className="text-orange-500">Cart</span>
+          </h2>
+          {cartItems.length > 0 ? (
+            <div className="d-flex flex-column gap-3">
+              {cartItems.map((item) => (
+                <CartItemRow
+                  key={item.id}
+                  item={item}
+                  onQuantityChange={handleQuantityChange}
+                  onRemoveItem={handleRemoveItem}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray mb-0">Your cart is empty.</p>
+          )}
+        </div>
+      </Col>
 
       {/* Order Summary Section */}
-      <div className="w-full lg:w-1/3 bg-heading-black rounded-3xl shadow-md p-8 space-y-6 flex flex-col justify-between">
-        <h2 className="text-display-4 text-white font-semibold font-DM Sans">
-          Order Summary
-        </h2>
-        <div className="space-y-4 text-white text-dm-base font-DM Sans flex-grow">
-          <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+      <Col xs={12} lg={4}>
+        <div className="w-100 bg-heading-black rounded-4 shadow-sm p-4 d-flex flex-column justify-content-between gap-4 h-100">
+          <h2 className="fs-display-4 text-white fw-semibold font-dm-sans mb-0">
+            Order Summary
+          </h2>
+          <div className="d-flex flex-column gap-3 text-white fs-dm-base font-dm-sans flex-grow-1">
+            <div className="d-flex justify-content-between">
+              <span>Subtotal</span>
+              <span>${subtotal.toFixed(2)}</span>
+            </div>
+            <div className="d-flex justify-content-between">
+              <span>Shipping</span>
+              <span>${shipping}</span>
+            </div>
+            <div className="d-flex justify-content-between">
+              <span>Tax</span>
+              <span>${tax}</span>
+            </div>
+            <div className="d-flex justify-content-between fs-5 fw-bold border-top pt-4">
+              <span>Total</span>
+              <span>${finalTotal}</span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span>Shipping</span>
-            <span>${shipping}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Tax</span>
-            <span>${tax}</span>
-          </div>
-          <div className="flex justify-between text-lg font-bold text-gray-800 border-t pt-4">
-            <span>Total</span>
-            <span>${finalTotal}</span>
-          </div>
+          <Button
+            text="Proceed to Checkout"
+            onClick={() =>
+              navigate("/shipping", {
+                state: {
+                  cartId,
+                  subtotal: subtotal.toFixed(2),
+                  shipping,
+                  tax,
+                  total: finalTotal,
+                },
+              })
+            }
+            variant="secondary"
+            className="mt-auto"
+          />
         </div>
-        <Button
-          text="Proceed to Checkout"
-          onClick={() =>
-            navigate("/shipping", {
-              state: {
-                cartId,
-                subtotal: subtotal.toFixed(2),
-                shipping,
-                tax,
-                total: finalTotal,
-              },
-            })
-          }
-          variant="secondary"
-          className="mt-auto"
-        />
-      </div>
-    </div>
+      </Col>
+    </Row>
   );
 }
 

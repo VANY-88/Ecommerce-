@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Nav from "react-bootstrap/Nav";
 import InventorySection from "./InventorySection";
 import SoldItemsSection from "./SoldItemsSection";
 import ProfitStatsSection from "./ProfitStatsSection";
@@ -11,25 +12,32 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("Inventory");
 
   return (
-    <div className="min-h-screen bg-brown-500 pt-28 pb-16 px-4 md:px-10 lg:px-20">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <h1 className="text-display-3 font-bold text-heading-black">Admin Dashboard</h1>
+    <div
+      className="bg-brown-500 px-3 px-md-5 px-lg-5"
+      style={{ minHeight: "100vh", paddingBottom: "4rem" }}
+    >
+      <div className="mx-auto d-flex flex-column gap-4" style={{ maxWidth: "72rem" }}>
+        <h1 className="fs-display-3 fw-bold text-heading-black">Admin Dashboard</h1>
 
-        <div className="flex flex-wrap border-b border-brown-600">
+        <Nav variant="tabs" className="border-bottom border-brown-600 flex-wrap">
           {TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 md:px-6 py-3 text-base font-semibold -mb-px border-b-2 transition-all duration-200 ${
-                activeTab === tab
-                  ? "border-orange-500 text-orange-500"
-                  : "border-transparent text-brown-1000 hover:text-heading-black hover:border-brown-700"
-              }`}
-            >
-              {tab}
-            </button>
+            <Nav.Item key={tab}>
+              <Nav.Link
+                active={activeTab === tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 px-md-4 py-2 fw-semibold ${
+                  activeTab === tab ? "text-orange-500 border-orange-500" : "text-brown-1000"
+                }`}
+                style={{
+                  borderColor: activeTab === tab ? undefined : "transparent",
+                  borderBottomWidth: "2px",
+                }}
+              >
+                {tab}
+              </Nav.Link>
+            </Nav.Item>
           ))}
-        </div>
+        </Nav>
 
         {activeTab === "Inventory" && <InventorySection />}
         {activeTab === "Sold Items" && <SoldItemsSection />}

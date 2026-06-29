@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Container from "react-bootstrap/Container";
+import Card from "react-bootstrap/Card";
 
 interface BlogPost {
   id: number;
@@ -64,47 +66,49 @@ function Blog() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-brown-500 px-6 py-[120px] space-y-16 ">
-      <h1 className="text-display-3 text-heading-black font-bold text-center mb-8">
+    <div className="min-vh-100 bg-brown-500 px-4 px-md-5 py-5" style={{ paddingBottom: "120px" }}>
+      <h1 className="fs-display-3 text-heading-black fw-bold text-center mb-5">
         Style Your Home <br /> with Expert Furniture Tips and Ideas
       </h1>
 
-      <div className="max-w-4xl mx-auto">
+      <Container style={{ maxWidth: "896px" }}>
         {posts.length > 0 ? (
-          <div className="space-y-8">
+          <div className="d-flex flex-column gap-4">
             {posts.map((post) => (
-              <div
+              <Card
                 key={post.id}
-                className="bg-white p-6 rounded-3xl shadow-md hover:shadow-xl transition-shadow flex items-center space-x-6"
+                className="flex-row align-items-center gap-4 p-4 rounded-4 shadow-sm border-0"
               >
-                <img
+                <Card.Img
                   src={post.imageUrl}
                   alt={post.title}
-                  className="w-64 h-48 object-cover rounded-2xl"
+                  className="rounded-4"
+                  style={{ width: "256px", height: "192px", objectFit: "cover", flexShrink: 0 }}
                   loading="lazy"
                   decoding="async"
                 />
 
-                <div className="flex-1">
-                  <h2 className="text-2xl font-semibold text-gray-800">
+                <Card.Body className="p-0 flex-grow-1">
+                  <Card.Title as="h2" className="fs-3 fw-semibold text-dark">
                     {post.title}
-                  </h2>
-                  <p className="text-gray-600 mt-2 mb-12">{post.excerpt}</p>
-                  <p
+                  </Card.Title>
+                  <Card.Text className="text-secondary mt-2 mb-5">{post.excerpt}</Card.Text>
+                  <Card.Text
                     onClick={() => navigate(`/blog/${post.id}`)}
-                    className="underline"
+                    className="text-decoration-underline mb-0"
+                    role="button"
+                    style={{ cursor: "pointer" }}
                   >
-                    {" "}
                     Read More
-                  </p>
-                </div>
-              </div>
+                  </Card.Text>
+                </Card.Body>
+              </Card>
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-600">No posts available</p>
+          <p className="text-center text-secondary">No posts available</p>
         )}
-      </div>
+      </Container>
     </div>
   );
 }

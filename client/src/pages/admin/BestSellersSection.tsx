@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
 import api from "../../services/api";
 import { ApiResponse, BestSeller } from "../../types/api";
 import { exportToExcel, exportToPdf } from "../../utils/exportReport";
@@ -47,27 +49,29 @@ function BestSellersSection() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-xl font-bold text-heading-black">Best Sellers</h2>
-        <div className="flex gap-3">
-          <button
+    <div className="d-flex flex-column gap-4">
+      <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <h2 className="fs-4 fw-bold text-heading-black">Best Sellers</h2>
+        <div className="d-flex gap-3">
+          <Button
             onClick={handleExportExcel}
-            className="bg-brown-300 text-heading-black px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 hover:text-white transition-colors duration-200"
+            className="bg-brown-300 text-heading-black border-0 fw-semibold"
+            style={{ padding: "0.5rem 1rem", borderRadius: "0.5rem" }}
           >
             Export Excel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleExportPdf}
-            className="bg-brown-300 text-heading-black px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 hover:text-white transition-colors duration-200"
+            className="bg-brown-300 text-heading-black border-0 fw-semibold"
+            style={{ padding: "0.5rem 1rem", borderRadius: "0.5rem" }}
           >
             Export PDF
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-2xl border border-brown-600">
-        <table className="w-full text-left text-sm">
+      <div className="bg-white rounded-4 border border-brown-600" style={{ overflowX: "auto" }}>
+        <Table responsive className="mb-0 text-start" style={{ fontSize: "0.875rem" }}>
           <thead className="bg-brown-300 text-brown-1000">
             <tr>
               <th className="px-4 py-3">#</th>
@@ -79,23 +83,23 @@ function BestSellersSection() {
           </thead>
           <tbody>
             {data.map((b, index) => (
-              <tr key={b.productId} className="border-t border-brown-600">
+              <tr key={b.productId} className="border-top border-brown-600">
                 <td className="px-4 py-3">{index + 1}</td>
-                <td className="px-4 py-3 font-medium text-heading-black">{b.productName}</td>
+                <td className="px-4 py-3 fw-medium text-heading-black">{b.productName}</td>
                 <td className="px-4 py-3">{b.quantitySold}</td>
                 <td className="px-4 py-3">${b.revenue.toFixed(2)}</td>
-                <td className="px-4 py-3 font-semibold text-orange-500">${b.profit.toFixed(2)}</td>
+                <td className="px-4 py-3 fw-semibold text-orange-500">${b.profit.toFixed(2)}</td>
               </tr>
             ))}
             {data.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-brown-1000">
+                <td colSpan={5} className="px-4 py-4 text-center text-brown-1000">
                   No sales yet.
                 </td>
               </tr>
             )}
           </tbody>
-        </table>
+        </Table>
       </div>
     </div>
   );

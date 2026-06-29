@@ -1,4 +1,5 @@
 import React from "react";
+import Form from "react-bootstrap/Form";
 
 interface FormInputProps {
   label: string;
@@ -20,25 +21,19 @@ const FormInput: React.FC<FormInputProps> = ({
   className = "",
 }) => {
   return (
-    <div className="space-y-2">
-      <label className="text-lg text-neutral-text-gray font-DM Sans font-semibold">
+    <Form.Group className="mb-2">
+      <Form.Label className="fs-5 text-neutral-text-gray font-dm-sans fw-semibold">
         {label}
-      </label>
-      <input
+      </Form.Label>
+      <Form.Control
         type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className={`w-full px-6 py-4
-          border border-brown-700 rounded-lg
-          text-lg text-brown-1000 focus:text-heading-black
-          focus:outline-none focus:ring-1 focus:ring-brown-900 focus:border-brown-900
-          bg-brown-300 focus:bg-brown-500
-          transition-all duration-300 ease-out
-        ${className}`}
+        className={`form-control-brand ${className}`}
       />
-    </div>
+    </Form.Group>
   );
 };
 

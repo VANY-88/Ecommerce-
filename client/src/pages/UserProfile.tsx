@@ -4,6 +4,8 @@ import api from "../services/api";
 import "../styles/UserProfile.css";
 import { ApiResponse, User, Order } from "../types/api";
 
+const PRODUCT_THUMB_SIZE = 140;
+
 function UserProfile() {
   const [user, setUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -55,15 +57,18 @@ function UserProfile() {
   }
 
   return (
-    <div className="UserProfile space-y-[60px] md:space-y-[120px]">
-      <div className="flex flex-col md:flex-row justify-between gap-8">
-        <div className="flex flex-col space-y-4">
-          <h2 className="text-display-3 text-heading-black font-bold text-left max-w-[300px]">
+    <div className="UserProfile d-flex flex-column gap-5">
+      <div className="d-flex flex-column flex-md-row justify-content-between gap-4">
+        <div className="d-flex flex-column gap-3">
+          <h2
+            className="fs-display-3 text-heading-black fw-bold text-start"
+            style={{ maxWidth: "300px" }}
+          >
             User <span className="text-orange-500">Information</span>
           </h2>
-          <a className="font-semibold text-base text-heading-black hover:text-orange-500 hover:underline">
+          <Link to="/edit-profile" className="fw-semibold fs-6 text-heading-black text-decoration-none">
             Edit Information
-          </a>
+          </Link>
         </div>
         <div className="UserProfile-info">
           <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
@@ -72,8 +77,8 @@ function UserProfile() {
           <p><strong>Address:</strong> {user.address}</p>
         </div>
       </div>
-      <div className="UserProfile-orders space-y-[60px]">
-        <h2 className="text-display-4 font-bold">Your Orders</h2>
+      <div className="UserProfile-orders d-flex flex-column gap-5">
+        <h2 className="fs-display-4 fw-bold">Your Orders</h2>
         {loading ? (
           <p>Loading orders...</p>
         ) : error ? (
@@ -100,8 +105,14 @@ function UserProfile() {
                   <summary>View Products</summary>
                   <ul>
                     {order.cart?.items.map((item) => (
-                      <li key={item.id} className="flex gap-[60px]">
-                        <img src={item.image} alt={item.productName} className="w-[140px] h-[140px]" loading="lazy" decoding="async" />
+                      <li key={item.id} className="d-flex" style={{ gap: "60px" }}>
+                        <img
+                          src={item.image}
+                          alt={item.productName}
+                          style={{ width: PRODUCT_THUMB_SIZE, height: PRODUCT_THUMB_SIZE }}
+                          loading="lazy"
+                          decoding="async"
+                        />
                         <div>
                           <p><strong>Product:</strong> {item.productName}</p>
                           <p><strong>Quantity:</strong> {item.quantity}</p>

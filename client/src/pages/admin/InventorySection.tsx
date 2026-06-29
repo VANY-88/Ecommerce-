@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import api from "../../services/api";
 import { ApiResponse, Product, Category } from "../../types/api";
 
@@ -169,19 +175,20 @@ function InventorySection() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-heading-black">Inventory ({products.length})</h2>
-        <button
+    <div className="d-flex flex-column gap-4">
+      <div className="d-flex align-items-center justify-content-between">
+        <h2 className="fs-4 fw-bold text-heading-black">Inventory ({products.length})</h2>
+        <Button
           onClick={openAddForm}
-          className="bg-heading-black text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-orange-500 transition-colors duration-200"
+          className="bg-heading-black text-white border-0 fw-semibold"
+          style={{ padding: "0.625rem 1.25rem", borderRadius: "0.5rem" }}
         >
           + Add Product
-        </button>
+        </Button>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-2xl border border-brown-600">
-        <table className="w-full text-left text-sm">
+      <div className="bg-white rounded-4 border border-brown-600" style={{ overflowX: "auto" }}>
+        <Table responsive className="mb-0 text-start" style={{ fontSize: "0.875rem" }}>
           <thead className="bg-brown-300 text-brown-1000">
             <tr>
               <th className="px-4 py-3">Name</th>
@@ -196,14 +203,14 @@ function InventorySection() {
           </thead>
           <tbody>
             {products.map((p) => (
-              <tr key={p.id} className="border-t border-brown-600">
-                <td className="px-4 py-3 font-medium text-heading-black">{p.name}</td>
+              <tr key={p.id} className="border-top border-brown-600">
+                <td className="px-4 py-3 fw-medium text-heading-black">{p.name}</td>
                 <td className="px-4 py-3">{p.categoryName}</td>
                 <td className="px-4 py-3">${p.price.toFixed(2)}</td>
                 <td className="px-4 py-3">${p.costPrice.toFixed(2)}</td>
                 <td className="px-4 py-3">
                   {p.discountPercent > 0 && p.discountStartDate && p.discountEndDate ? (
-                    <span className={p.isDiscountActive ? "text-orange-500 font-semibold" : "text-brown-1000"}>
+                    <span className={p.isDiscountActive ? "text-orange-500 fw-semibold" : "text-brown-1000"}>
                       {p.discountPercent}% ({formatDate(p.discountStartDate)}–{formatDate(p.discountEndDate)})
                     </span>
                   ) : (
@@ -212,75 +219,108 @@ function InventorySection() {
                 </td>
                 <td className="px-4 py-3">{p.quantity}</td>
                 <td className="px-4 py-3">{p.status}</td>
-                <td className="px-4 py-3 space-x-3">
-                  <button onClick={() => openEditForm(p)} className="text-orange-500 hover:underline">
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:underline">
-                    Delete
-                  </button>
+                <td className="px-4 py-3">
+                  <div className="d-flex gap-3">
+                    <Button
+                      variant="link"
+                      onClick={() => openEditForm(p)}
+                      className="text-orange-500 p-0"
+                      style={{ textDecoration: "none" }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="link"
+                      onClick={() => handleDelete(p.id)}
+                      className="text-red p-0"
+                      style={{ textDecoration: "none" }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       </div>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-heading-black">
-              {editingId ? "Edit Product" : "Add Product"}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input
+      <Modal show={showForm} onHide={() => setShowForm(false)} centered scrollable>
+        <Modal.Header closeButton>
+          <Modal.Title className="fs-5 fw-bold text-heading-black">
+            {editingId ? "Edit Product" : "Add Product"}
+          </Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmit}>
+          <Modal.Body className="d-flex flex-column gap-3">
+            <Form.Group>
+              <Form.Control
                 required
                 placeholder="Name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                className="border-brown-600"
+                style={{ borderRadius: "0.5rem" }}
               />
-              <textarea
+            </Form.Group>
+            <Form.Group>
+              <Form.Control
+                as="textarea"
                 required
                 placeholder="Description"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                className="border-brown-600"
+                style={{ borderRadius: "0.5rem" }}
               />
-              <div className="grid grid-cols-2 gap-3">
-                <input
+            </Form.Group>
+
+            <Row className="g-3">
+              <Col xs={6}>
+                <Form.Control
                   required
                   type="number"
                   step="0.01"
                   placeholder="Price"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                  className="border-brown-600"
+                  style={{ borderRadius: "0.5rem" }}
                 />
-                <input
+              </Col>
+              <Col xs={6}>
+                <Form.Control
                   required
                   type="number"
                   step="0.01"
                   placeholder="Cost Price"
                   value={form.costPrice}
                   onChange={(e) => setForm({ ...form, costPrice: e.target.value })}
-                  className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                  className="border-brown-600"
+                  style={{ borderRadius: "0.5rem" }}
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <input
+              </Col>
+            </Row>
+
+            <Row className="g-3">
+              <Col xs={6}>
+                <Form.Control
                   required
                   type="number"
                   placeholder="Quantity"
                   value={form.quantity}
                   onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-                  className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                  className="border-brown-600"
+                  style={{ borderRadius: "0.5rem" }}
                 />
-                <select
+              </Col>
+              <Col xs={6}>
+                <Form.Select
                   required
                   value={form.categoryId}
                   onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                  className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                  className="border-brown-600"
+                  style={{ borderRadius: "0.5rem" }}
                 >
                   <option value="">Select category</option>
                   {categories.map((c) => (
@@ -288,13 +328,15 @@ function InventorySection() {
                       {c.name}
                     </option>
                   ))}
-                </select>
-              </div>
+                </Form.Select>
+              </Col>
+            </Row>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-brown-1000">Discount (optional)</label>
-                <div className="grid grid-cols-3 gap-3">
-                  <input
+            <div className="d-flex flex-column gap-2">
+              <Form.Label className="fs-6 fw-semibold text-brown-1000 mb-0">Discount (optional)</Form.Label>
+              <Row className="g-3">
+                <Col xs={4}>
+                  <Form.Control
                     type="number"
                     step="0.01"
                     min="0"
@@ -302,82 +344,97 @@ function InventorySection() {
                     placeholder="Discount %"
                     value={form.discountPercent}
                     onChange={(e) => setForm({ ...form, discountPercent: e.target.value })}
-                    className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                    className="border-brown-600"
+                    style={{ borderRadius: "0.5rem" }}
                   />
-                  <input
+                </Col>
+                <Col xs={4}>
+                  <Form.Control
                     type="date"
                     value={form.discountStartDate}
                     onChange={(e) => setForm({ ...form, discountStartDate: e.target.value })}
-                    className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                    className="border-brown-600"
+                    style={{ borderRadius: "0.5rem" }}
                   />
-                  <input
+                </Col>
+                <Col xs={4}>
+                  <Form.Control
                     type="date"
                     value={form.discountEndDate}
                     onChange={(e) => setForm({ ...form, discountEndDate: e.target.value })}
-                    className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                    className="border-brown-600"
+                    style={{ borderRadius: "0.5rem" }}
                   />
-                </div>
-              </div>
+                </Col>
+              </Row>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-brown-1000">Product Image</label>
-                <div className="flex items-center gap-3">
-                  {form.image && (
-                    <img
-                      src={form.image}
-                      alt="Preview"
-                      className="w-16 h-16 object-cover rounded-lg border border-brown-600"
-                    />
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="flex-1 text-sm"
+            <div className="d-flex flex-column gap-2">
+              <Form.Label className="fs-6 fw-semibold text-brown-1000 mb-0">Product Image</Form.Label>
+              <div className="d-flex align-items-center gap-3">
+                {form.image && (
+                  <img
+                    src={form.image}
+                    alt="Preview"
+                    className="rounded border border-brown-600"
+                    style={{ width: "4rem", height: "4rem", objectFit: "cover" }}
                   />
-                </div>
-                {uploading && <p className="text-sm text-brown-1000">Uploading...</p>}
+                )}
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="flex-grow-1"
+                  style={{ fontSize: "0.875rem" }}
+                />
               </div>
+              {uploading && <p className="fs-6 text-brown-1000 mb-0">Uploading...</p>}
+            </div>
 
-              <div className="grid grid-cols-2 gap-3 items-center">
-                <select
+            <Row className="g-3 align-items-center">
+              <Col xs={6}>
+                <Form.Select
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full px-4 py-2 border border-brown-600 rounded-lg"
+                  className="border-brown-600"
+                  style={{ borderRadius: "0.5rem" }}
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
-                </select>
-                <label className="flex items-center gap-2 text-sm text-brown-1000">
-                  <input
-                    type="checkbox"
-                    checked={form.isFeatured}
-                    onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-                  />
-                  Featured
-                </label>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={uploading || !form.image}
-                  className="flex-1 bg-heading-black text-white py-2.5 rounded-lg font-semibold hover:bg-orange-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 bg-brown-300 text-heading-black py-2.5 rounded-lg font-semibold hover:bg-brown-400 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                </Form.Select>
+              </Col>
+              <Col xs={6}>
+                <Form.Check
+                  type="checkbox"
+                  id="isFeatured"
+                  label="Featured"
+                  checked={form.isFeatured}
+                  onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
+                  className="text-brown-1000"
+                />
+              </Col>
+            </Row>
+          </Modal.Body>
+          <Modal.Footer className="gap-3">
+            <Button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="bg-brown-300 text-heading-black border-0 fw-semibold flex-grow-1"
+              style={{ padding: "0.625rem 0", borderRadius: "0.5rem" }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={uploading || !form.image}
+              className="bg-heading-black text-white border-0 fw-semibold flex-grow-1"
+              style={{ padding: "0.625rem 0", borderRadius: "0.5rem" }}
+            >
+              Save
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </div>
   );
 }

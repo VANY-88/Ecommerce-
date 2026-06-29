@@ -1,4 +1,7 @@
 import React from "react";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
 const teamMembers = [
   {
@@ -15,7 +18,7 @@ const teamMembers = [
 const values = [
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
       </svg>
     ),
@@ -24,7 +27,7 @@ const values = [
   },
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
@@ -33,7 +36,7 @@ const values = [
   },
   {
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
     ),
@@ -51,26 +54,37 @@ const stats = [
 
 function About() {
   return (
-    <div className="min-h-screen bg-brown-500 font-sans">
+    <div className="min-vh-100 bg-brown-500 font-dm-sans">
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-brown pt-32 pb-28 px-6 text-center">
+      <section
+        className="position-relative overflow-hidden bg-brown text-center px-4"
+        style={{ paddingBottom: "7rem" }}
+      >
         <div
-          className="absolute inset-0 opacity-10"
+          className="position-absolute top-0 start-0 w-100 h-100"
           style={{
+            opacity: 0.1,
             backgroundImage:
               "radial-gradient(circle at 20% 60%, #FF7029 0%, transparent 50%), radial-gradient(circle at 80% 20%, #D74800 0%, transparent 45%)",
           }}
         />
-        <div className="relative max-w-3xl mx-auto space-y-6">
-          <span className="inline-block text-orange-400 text-sm font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full border border-orange-500 border-opacity-40">
+        <div className="position-relative mx-auto d-flex flex-column gap-4" style={{ maxWidth: "768px" }}>
+          <span
+            className="d-inline-block text-orange-400 fw-semibold text-uppercase rounded-pill px-4 py-2"
+            style={{
+              fontSize: "0.875rem",
+              letterSpacing: "0.1em",
+              border: "1px solid rgba(215, 72, 0, 0.4)",
+            }}
+          >
             About Us
           </span>
-          <h1 className="text-display-2 font-bold text-white leading-tight">
+          <h1 className="fs-display-2 fw-bold text-white" style={{ lineHeight: 1.1 }}>
             Built by one,<br />
             <span className="text-orange-400">loved by thousands</span>
           </h1>
-          <p className="text-brown-700 text-xl leading-relaxed">
+          <p className="text-brown-700 fs-3" style={{ lineHeight: 1.6 }}>
             WEB-SHOP started as a passion project — one developer who believed
             online shopping could be simpler, faster, and actually enjoyable.
           </p>
@@ -78,87 +92,116 @@ function About() {
       </section>
 
       {/* Stats */}
-      <section className="bg-white border-y border-brown-600">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-brown-600">
-          {stats.map((stat) => (
-            <div key={stat.label} className="py-10 text-center">
-              <p className="text-display-3 font-bold text-orange-500">{stat.value}</p>
-              <p className="text-brown-1000 mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
+      <section className="bg-white border-top border-bottom border-brown-600">
+        <Container className="py-5" style={{ maxWidth: "896px" }}>
+          <Row className="text-center g-0">
+            {stats.map((stat, index) => (
+              <Col
+                key={stat.label}
+                xs={6}
+                md={3}
+                className="py-4"
+                style={{
+                  borderLeft: index !== 0 ? "1px solid #e3ded2" : undefined,
+                }}
+              >
+                <p className="fs-display-3 fw-bold text-orange-500 mb-0">{stat.value}</p>
+                <p className="text-brown-1000 mt-1 mb-0">{stat.label}</p>
+              </Col>
+            ))}
+          </Row>
+        </Container>
       </section>
 
       {/* Mission */}
-      <section className="max-w-5xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16 items-center">
-        <div className="space-y-5">
-          <h2 className="text-display-3 font-bold text-heading-black">
-            Why we built<br />
-            <span className="text-orange-500">this shop</span>
-          </h2>
-          <p className="text-brown-1000 text-dm-base leading-relaxed">
-            We were tired of online stores that were slow, cluttered, and hard to trust.
-            So we built WEB-SHOP — a store we'd actually want to use ourselves.
-          </p>
-          <p className="text-brown-1000 text-dm-base leading-relaxed">
-            From the first commit to the latest deploy, every decision has been made
-            with one goal: make shopping simpler and more human.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-4">
-          {values.map((v) => (
-            <div
-              key={v.title}
-              className="flex gap-4 bg-white rounded-2xl p-5 border border-brown-600 hover:border-orange-500 transition-colors duration-200 shadow-custom"
-            >
-              <div className="flex-shrink-0 w-11 h-11 bg-orange-500 bg-opacity-10 rounded-xl flex items-center justify-center text-orange-500">
-                {v.icon}
-              </div>
-              <div>
-                <h3 className="font-semibold text-heading-black">{v.title}</h3>
-                <p className="text-brown-1000 text-sm leading-relaxed mt-0.5">{v.desc}</p>
-              </div>
+      <Container className="px-4 py-5" style={{ maxWidth: "1024px", paddingTop: "6rem", paddingBottom: "6rem" }}>
+        <Row className="align-items-center g-5">
+          <Col md={6} className="d-flex flex-column gap-3">
+            <h2 className="fs-display-3 fw-bold text-heading-black">
+              Why we built<br />
+              <span className="text-orange-500">this shop</span>
+            </h2>
+            <p className="text-brown-1000 fs-dm-base">
+              We were tired of online stores that were slow, cluttered, and hard to trust.
+              So we built WEB-SHOP — a store we'd actually want to use ourselves.
+            </p>
+            <p className="text-brown-1000 fs-dm-base">
+              From the first commit to the latest deploy, every decision has been made
+              with one goal: make shopping simpler and more human.
+            </p>
+          </Col>
+          <Col md={6}>
+            <div className="d-flex flex-column gap-3">
+              {values.map((v) => (
+                <div
+                  key={v.title}
+                  className="d-flex gap-3 bg-white rounded-4 p-4 border border-brown-600 shadow-custom"
+                >
+                  <div
+                    className="flex-shrink-0 bg-orange-500 rounded-3 d-flex align-items-center justify-content-center text-orange-500"
+                    style={{ width: "2.75rem", height: "2.75rem", backgroundColor: "rgba(215, 72, 0, 0.1)" }}
+                  >
+                    {v.icon}
+                  </div>
+                  <div>
+                    <h3 className="fw-semibold text-heading-black">{v.title}</h3>
+                    <p className="text-brown-1000 small mt-1">{v.desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </Col>
+        </Row>
+      </Container>
 
       {/* Team */}
-      <section className="bg-white py-24 px-6">
-        <div className="max-w-4xl mx-auto space-y-14">
-          <div className="text-center space-y-3">
-            <h2 className="text-display-3 font-bold text-heading-black">
+      <section className="bg-white px-4" style={{ paddingTop: "6rem", paddingBottom: "6rem" }}>
+        <Container style={{ maxWidth: "896px" }}>
+          <div className="d-flex flex-column gap-3 text-center mb-5">
+            <h2 className="fs-display-3 fw-bold text-heading-black">
               Meet the <span className="text-orange-500">founder</span>
             </h2>
-            <p className="text-brown-1000 text-dm-base">
+            <p className="text-brown-1000 fs-dm-base">
               One person, one shared vision — build something people love.
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-8">
+          <div className="d-flex flex-wrap justify-content-center gap-4">
             {teamMembers.map((member) => (
               <div
                 key={member.id}
-                className="group flex flex-col items-center text-center bg-brown-400 rounded-3xl p-10 border border-brown-600 hover:border-orange-500 hover:shadow-custom transition-all duration-300 w-full max-w-sm"
+                className="d-flex flex-column align-items-center text-center bg-brown-400 rounded-4 p-5 border border-brown-600 w-100"
+                style={{ maxWidth: "384px" }}
               >
-                <div className="relative mb-6">
+                <div className="position-relative mb-4">
                   <img
                     src={member.imageUrl}
                     alt={member.name}
-                    className="w-28 h-28 rounded-2xl object-cover"
+                    className="rounded-4"
+                    style={{ width: "112px", height: "112px", objectFit: "cover" }}
                     loading="lazy"
                     decoding="async"
                   />
-                  <div className="absolute -bottom-2 -right-2 w-5 h-5 bg-green-400 rounded-full border-2 border-white" />
+                  <div
+                    className="position-absolute rounded-circle border border-2 border-white"
+                    style={{
+                      bottom: "-0.5rem",
+                      right: "-0.5rem",
+                      width: "1.25rem",
+                      height: "1.25rem",
+                      backgroundColor: "#4ade80",
+                    }}
+                  />
                 </div>
-                <h3 className="text-display-4 font-bold text-heading-black">{member.name}</h3>
-                <p className="text-orange-500 font-medium text-sm mt-1">{member.role}</p>
-                <p className="text-brown-1000 text-sm leading-relaxed mt-4">{member.description}</p>
-                <div className="flex flex-wrap justify-center gap-2 mt-5">
+                <h3 className="fs-display-4 fw-bold text-heading-black">{member.name}</h3>
+                <p className="text-orange-500 fw-medium small mt-1">{member.role}</p>
+                <p className="text-brown-1000 small mt-3">{member.description}</p>
+                <div className="d-flex flex-wrap justify-content-center gap-2 mt-3">
                   {member.skills.map((skill) => (
                     <span
                       key={skill}
-                      className="bg-white text-heading-black text-xs font-medium px-3 py-1 rounded-full border border-brown-600"
+                      className="bg-white text-heading-black fw-medium rounded-pill border border-brown-600 px-3 py-1"
+                      style={{ fontSize: "0.75rem" }}
                     >
                       {skill}
                     </span>
@@ -167,20 +210,20 @@ function About() {
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-6 text-center space-y-6">
-        <h2 className="text-display-3 font-bold text-heading-black">
+      <section className="px-4 text-center d-flex flex-column gap-4" style={{ paddingTop: "6rem", paddingBottom: "6rem" }}>
+        <h2 className="fs-display-3 fw-bold text-heading-black mb-0">
           Ready to explore?
         </h2>
-        <p className="text-brown-1000 text-dm-base max-w-sm mx-auto">
+        <p className="text-brown-1000 fs-dm-base mx-auto mb-0" style={{ maxWidth: "384px" }}>
           Browse hundreds of products curated for quality and value.
         </p>
         <a
           href="/"
-          className="inline-block bg-orange-500 hover:bg-orange-400 text-white font-semibold px-10 py-4 rounded-2xl transition-colors duration-200 text-lg"
+          className="d-inline-block bg-orange-500 text-white fw-semibold rounded-4 px-5 py-3 fs-5 text-decoration-none mx-auto"
         >
           Start Shopping
         </a>

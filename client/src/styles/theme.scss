@@ -1,0 +1,251 @@
+@import "~bootstrap/scss/bootstrap";
+
+// Brand color tokens (recreated from the former Tailwind config)
+$brand-colors: (
+  "brown": #220e03,
+  "brown-300": #fffdf9,
+  "brown-400": #faf7f1,
+  "brown-500": #f2efe6,
+  "brown-600": #e3ded2,
+  "brown-700": #cdc8ba,
+  "brown-900": #a79f8b,
+  "brown-1000": #948a74,
+  "orange-400": #ff7029,
+  "orange-500": #d74800,
+  "heading-black": #2c0000,
+  "neutral-text-gray": #505050,
+  "lightgray": #d3d3d3,
+  "gray": #828282,
+  "gray-400": #8d8d8d,
+  "red": #ff002f,
+);
+
+@each $name, $color in $brand-colors {
+  .bg-#{$name} {
+    background-color: $color !important;
+  }
+  .text-#{$name} {
+    color: $color !important;
+  }
+  .border-#{$name} {
+    border-color: $color !important;
+  }
+}
+
+// Brand font tokens
+.font-dm-sans {
+  font-family: "DM Sans", sans-serif;
+}
+
+.fs-display-2 {
+  font-size: 68px;
+  line-height: 1.1;
+}
+.fs-display-3 {
+  font-size: 44px;
+  line-height: 1.25;
+}
+.fs-display-4 {
+  font-size: 28px;
+  line-height: 1.5;
+}
+.fs-dm-base {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.shadow-custom {
+  box-shadow: 0px 2px 12px 0px rgba(20, 20, 43, 0.08);
+}
+
+// Brand button variants (used by components/Button.tsx)
+.btn-brand-primary {
+  background-color: map-get($brand-colors, "heading-black");
+  color: #fff;
+  &:hover,
+  &:focus {
+    background-color: map-get($brand-colors, "orange-500");
+    color: #fff;
+  }
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(215, 72, 0, 0.4);
+  }
+}
+
+.btn-brand-secondary {
+  background-color: #fff;
+  color: map-get($brand-colors, "heading-black");
+  &:hover,
+  &:focus {
+    background-color: map-get($brand-colors, "orange-500");
+    color: #fff;
+  }
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(215, 72, 0, 0.4);
+  }
+}
+
+.btn-brand-disabled {
+  background-color: map-get($brand-colors, "brown-700");
+  color: #fff;
+  cursor: not-allowed;
+}
+
+.btn-back:hover {
+  background-color: map-get($brand-colors, "brown-600");
+}
+
+.btn-quantity {
+  color: $gray-600;
+  transition: color 0.2s;
+  &:hover:not(:disabled) {
+    color: map-get($brand-colors, "orange-500");
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.btn-remove {
+  transition: color 0.2s;
+  &:hover {
+    color: map-get($brand-colors, "red");
+  }
+}
+
+.w-auto-important {
+  width: auto !important;
+}
+
+// Header
+.navbar-brand-transition {
+  border-bottom: 1px solid rgba(44, 0, 0, 0.08);
+}
+
+.nav-link-brand {
+  position: relative;
+  color: map-get($brand-colors, "heading-black") !important;
+  padding-bottom: 0.25rem;
+  transition: color 0.2s;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    height: 2px;
+    width: 0;
+    background-color: map-get($brand-colors, "orange-500");
+    transition: width 0.3s;
+  }
+
+  &:hover {
+    color: map-get($brand-colors, "orange-500") !important;
+    &::after {
+      width: 100%;
+    }
+  }
+}
+
+.icon-circle-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: map-get($brand-colors, "brown-300");
+  border: 1.5px solid map-get($brand-colors, "heading-black");
+  color: map-get($brand-colors, "brown-1000") !important;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+
+  &:hover {
+    background-color: map-get($brand-colors, "orange-500");
+    border-color: map-get($brand-colors, "orange-500");
+    color: #fff !important;
+  }
+}
+
+.icon-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+// Footer
+.footer-link {
+  color: map-get($brand-colors, "neutral-text-gray");
+  transition: color 0.2s;
+  &:hover {
+    color: map-get($brand-colors, "brown");
+  }
+}
+
+.icon-social {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.footer-social-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: map-get($brand-colors, "brown-300");
+  color: map-get($brand-colors, "brown-1000");
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.footer-social-label {
+  transition: color 0.2s;
+}
+
+.footer-social:hover {
+  .footer-social-icon {
+    background-color: map-get($brand-colors, "orange-500");
+    color: #fff;
+  }
+  .footer-social-label {
+    color: map-get($brand-colors, "orange-500") !important;
+  }
+}
+
+// Brand form control (used by FormInput.tsx / PasswordInput.tsx)
+.form-control-brand {
+  padding: 1rem 1.5rem;
+  border: 1px solid map-get($brand-colors, "brown-700");
+  border-radius: 0.5rem;
+  font-size: 1.125rem;
+  color: map-get($brand-colors, "brown-1000");
+  background-color: map-get($brand-colors, "brown-300");
+  transition: all 0.3s ease-out;
+
+  &:focus {
+    color: map-get($brand-colors, "heading-black");
+    background-color: map-get($brand-colors, "brown-500");
+    border-color: map-get($brand-colors, "brown-900");
+    box-shadow: 0 0 0 1px map-get($brand-colors, "brown-900");
+  }
+}
+
+body {
+  color: map-get($brand-colors, "brown");
+}
+
+// Product card hover (used by LandingPage.tsx "Recommended" grid and ProductPage.tsx catalog)
+.product-card-hover {
+  transition: box-shadow 0.3s, border-color 0.3s;
+  &:hover {
+    box-shadow: 0 0.5rem 1.5rem rgba(44, 0, 0, 0.12);
+    border-color: map-get($brand-colors, "orange-500") !important;
+  }
+  &:hover .product-card-hover-img {
+    transform: scale(1.06);
+  }
+}
+.product-card-hover-img {
+  transition: transform 0.3s;
+}

@@ -106,17 +106,23 @@ function ShippingDetails() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-brown-500 py-[100px] md:py-[120px] px-4 md:px-10 lg:px-[80px]">
-      <div className="self-start mb-8 pl-2 md:pl-8">
+    <div
+      className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-brown-500 px-3 px-md-4 px-lg-5"
+      style={{ paddingBottom: 100 }}
+    >
+      <div className="align-self-start mb-4 ps-2 ps-md-4">
         <BackButton />
       </div>
-      <div className="bg-white rounded-3xl shadow-lg w-full max-w-[804px] px-8 sm:px-16 py-12">
-        <form onSubmit={handleShippingInfo} className="space-y-[40px]">
-          <h2 className="text-display-3 text-heading-black font-bold text-left">
+      <div
+        className="bg-white rounded-4 shadow-lg w-100 px-4 px-sm-5 py-5"
+        style={{ maxWidth: 804 }}
+      >
+        <form onSubmit={handleShippingInfo} className="d-flex flex-column gap-5">
+          <h2 className="fs-display-3 text-heading-black fw-bold text-start mb-0">
             {isLoggedIn ? (
               <>
                 Please confirm your{" "}
-                <span className="block">
+                <span className="d-block">
                   <span className="text-orange-500">Shipping</span>{" "}
                   <span className="text-heading-black">Information.</span>
                 </span>
@@ -124,7 +130,7 @@ function ShippingDetails() {
             ) : (
               <>
                 Enter your{" "}
-                <span className="block">
+                <span className="d-block">
                   <span className="text-orange-500">Shipping</span>{" "}
                   <span className="text-heading-black">Information.</span>
                 </span>
@@ -132,8 +138,8 @@ function ShippingDetails() {
             )}
           </h2>
 
-          <div className="space-y-4">
-            <div className="flex space-x-4">
+          <div className="d-flex flex-column gap-3">
+            <div className="d-flex gap-3">
               <FormInput
                 label="First Name"
                 type="firstName"
@@ -141,7 +147,7 @@ function ShippingDetails() {
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="First Name"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
               <FormInput
                 label="Last Name"
@@ -150,7 +156,7 @@ function ShippingDetails() {
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Last Name"
                 required
-                className="border-b-2 focus:ring-0"
+                className="border-bottom border-2"
               />
             </div>
             <FormInput
@@ -160,7 +166,7 @@ function ShippingDetails() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
-              className="border-b-2 focus:ring-0"
+              className="border-bottom border-2"
             />
             <FormInput
               label="Phone Number"
@@ -169,7 +175,7 @@ function ShippingDetails() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Enter your phone number"
               required
-              className="border-b-2 focus:ring-0"
+              className="border-bottom border-2"
             />
             <FormInput
               label="Address"
@@ -178,43 +184,43 @@ function ShippingDetails() {
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Enter your address"
               required
-              className="border-b-2 focus:ring-0"
+              className="border-bottom border-2"
             />
           </div>
 
-          <div className="space-y-4 text-xl">
-            <div className="flex justify-between">
-              <span className="text-gray-700">Subtotal:</span>
-              <span className="text-gray-900 font-bold">${subtotal}</span>
+          <div className="d-flex flex-column gap-3 fs-4">
+            <div className="d-flex justify-content-between">
+              <span className="text-gray">Subtotal:</span>
+              <span className="text-heading-black fw-bold">${subtotal}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-700">Shipping:</span>
-              <span className="text-gray-900 font-bold">${shipping}</span>
+            <div className="d-flex justify-content-between">
+              <span className="text-gray">Shipping:</span>
+              <span className="text-heading-black fw-bold">${shipping}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-700">Tax:</span>
-              <span className="text-gray-900 font-bold">${tax}</span>
+            <div className="d-flex justify-content-between">
+              <span className="text-gray">Tax:</span>
+              <span className="text-heading-black fw-bold">${tax}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-700">Total:</span>
-              <span className="text-gray-900 font-bold">${total}</span>
+            <div className="d-flex justify-content-between">
+              <span className="text-gray">Total:</span>
+              <span className="text-heading-black fw-bold">${total}</span>
             </div>
           </div>
 
           <Button
             text="Confirm Order"
             type="submit"
-            className="w-full"
+            className="w-100"
             disabled={!isValid}
           />
 
-          <p className="text-center">
+          <p className="text-center mb-0">
             {!isLoggedIn && (
               <>
                 Already have an account?{" "}
                 <button
                   onClick={handleLoginRedirect}
-                  className="text-orange-500 underline"
+                  className="text-orange-500 text-decoration-underline border-0 bg-transparent p-0"
                   type="button"
                 >
                   Login now

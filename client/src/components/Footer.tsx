@@ -30,115 +30,84 @@ const YoutubeIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
+const footerLinkClass = "footer-link text-neutral-text-gray font-dm-sans fs-6 text-decoration-none d-block mb-3";
+
 const Footer: React.FC = () => {
   return (
-    <section className="flex justify-center items-center w-full px-4 sm:px-8 lg:px-20 py-16 bg-brown-600">
-      {/* wrapper */}
-      <div className="flex w-full max-w-[1220px] flex-col md:flex-row justify-between items-start gap-10">
+    <section className="d-flex justify-content-center align-items-center w-100 px-4 px-lg-5 py-5 bg-brown-600">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start gap-5 w-100" style={{ maxWidth: "1220px" }}>
         {/* Logo + copyright */}
-        <div className="flex flex-col items-start gap-[18px] shrink-0">
-          <div className="flex items-center gap-2 py-[1px]">
+        <div className="d-flex flex-column align-items-start gap-3 flex-shrink-0">
+          <div className="d-flex align-items-center gap-2">
             <img
               src="./assets/Cir.svg"
               alt="Logo"
-              className="w-[39px] h-[37px]"
+              style={{ width: "39px", height: "37px" }}
               loading="lazy"
               decoding="async"
             />
-            <h1 className="text-black font-DM Sans text-[28px] font-extrabold leading-normal tracking-[0.64px]">
+            <h1 className="text-black font-dm-sans fs-2 fw-bolder">
               Furnitech
             </h1>
           </div>
-          <h2 className="text-[16px] font-DM Sans font-normal leading-[30px] max-w-[280px]">
+          <h2 className="fs-6 font-dm-sans fw-normal" style={{ maxWidth: "280px" }}>
             Copyright © 2024 Furnitech | All Rights Reserved
           </h2>
         </div>
 
         {/* Footer links */}
-        <div className="flex flex-wrap items-start gap-8 md:gap-[60px]">
+        <div className="d-flex flex-wrap align-items-start gap-5">
           {/* Product */}
-          <div className="flex flex-col items-start gap-6">
-            <h1 className="text-black font-DM Sans text-[20px] font-semibold leading-[20px]">
-              Product
-            </h1>
-            <div className="flex flex-col items-start gap-[18px]">
-              <a href="/" className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] hover:text-brown">
-                Categories
-              </a>
-              <a href="/" className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] hover:text-brown">
-                Reviews
-              </a>
-              <a href="/" className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] hover:text-brown">
-                New Colections
-              </a>
+          <div className="d-flex flex-column align-items-start gap-3">
+            <h1 className="text-black font-dm-sans fs-5 fw-semibold">Product</h1>
+            <div>
+              <a href="/" className={footerLinkClass}>Categories</a>
+              <a href="/" className={footerLinkClass}>Reviews</a>
+              <a href="/" className={footerLinkClass}>New Colections</a>
             </div>
           </div>
 
           {/* Company */}
-          <div className="flex flex-col items-start gap-6">
-            <h1 className="text-black font-DM Sans text-[20px] font-semibold leading-[20px]">
-              Company
-            </h1>
-            <div className="flex flex-col items-start gap-[18px]">
-              <a href="/" className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] hover:text-brown">
-                About
-              </a>
-              <a href="/" className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] hover:text-brown">
-                Contact Us
-              </a>
+          <div className="d-flex flex-column align-items-start gap-3">
+            <h1 className="text-black font-dm-sans fs-5 fw-semibold">Company</h1>
+            <div>
+              <a href="/" className={footerLinkClass}>About</a>
+              <a href="/" className={footerLinkClass}>Contact Us</a>
             </div>
           </div>
 
           {/* Support */}
-          <div className="flex flex-col items-start gap-6">
-            <h1 className="text-black font-DM Sans text-[20px] font-semibold leading-[20px]">
-              Support
-            </h1>
-            <div className="flex flex-col items-start gap-[18px]">
-              <a href="/" className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] hover:text-brown">
-                Help center
-              </a>
-              <a href="/" className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] hover:text-brown">
-                Chat support
-              </a>
+          <div className="d-flex flex-column align-items-start gap-3">
+            <h1 className="text-black font-dm-sans fs-5 fw-semibold">Support</h1>
+            <div>
+              <a href="/" className={footerLinkClass}>Help center</a>
+              <a href="/" className={footerLinkClass}>Chat support</a>
             </div>
           </div>
 
           {/* Follow us */}
-          <div className="flex flex-col items-start gap-6">
-            <h1 className="text-black font-DM Sans text-[20px] font-bold leading-[20px]">
-              Follow us
-            </h1>
-            <div className="flex flex-col items-start gap-[18px]">
-              <a href="/" className="group flex items-center gap-2">
-                <span className="w-8 h-8 rounded-[5px] shrink-0 flex items-center justify-center bg-brown-300 text-brown-1000 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-200">
-                  <FacebookIcon className="w-5 h-5" />
-                </span>
-                <span className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] group-hover:text-orange-500 transition-colors duration-200">Facebook</span>
+          <div className="d-flex flex-column align-items-start gap-3">
+            <h1 className="text-black font-dm-sans fs-5 fw-bold">Follow us</h1>
+            <div className="d-flex flex-column align-items-start gap-3">
+              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+                <span className="footer-social-icon"><FacebookIcon className="icon-social" /></span>
+                <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">Facebook</span>
               </a>
-              <a href="/" className="group flex items-center gap-2">
-                <span className="w-8 h-8 rounded-[5px] shrink-0 flex items-center justify-center bg-brown-300 text-brown-1000 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-200">
-                  <TwitterIcon className="w-5 h-5" />
-                </span>
-                <span className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] group-hover:text-orange-500 transition-colors duration-200">Twitter</span>
+              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+                <span className="footer-social-icon"><TwitterIcon className="icon-social" /></span>
+                <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">Twitter</span>
               </a>
-              <a href="/" className="group flex items-center gap-2">
-                <span className="w-8 h-8 rounded-[5px] shrink-0 flex items-center justify-center bg-brown-300 text-brown-1000 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-200">
-                  <InstagramIcon className="w-5 h-5" />
-                </span>
-                <span className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] group-hover:text-orange-500 transition-colors duration-200">Instagram</span>
+              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+                <span className="footer-social-icon"><InstagramIcon className="icon-social" /></span>
+                <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">Instagram</span>
               </a>
-              <a href="/" className="group flex items-center gap-2">
-                <span className="w-8 h-8 rounded-[5px] shrink-0 flex items-center justify-center bg-brown-300 text-brown-1000 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-200">
-                  <LinkedInIcon className="w-5 h-5" />
-                </span>
-                <span className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] group-hover:text-orange-500 transition-colors duration-200">LinkedIn</span>
+              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+                <span className="footer-social-icon"><LinkedInIcon className="icon-social" /></span>
+                <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">LinkedIn</span>
               </a>
-              <a href="/" className="group flex items-center gap-2">
-                <span className="w-8 h-8 rounded-[5px] shrink-0 flex items-center justify-center bg-brown-300 text-brown-1000 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-200">
-                  <YoutubeIcon className="w-5 h-5" />
-                </span>
-                <span className="text-neutral-text-gray font-DM Sans text-[18px] font-normal leading-[18px] group-hover:text-orange-500 transition-colors duration-200">Youtube</span>
+              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+                <span className="footer-social-icon"><YoutubeIcon className="icon-social" /></span>
+                <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">Youtube</span>
               </a>
             </div>
           </div>

@@ -44,87 +44,94 @@ function Checkout() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-brown-500 pt-[114px] pb-[464px]">
-      <div className="bg-white rounded-3xl shadow-lg w-full max-w-[804px] px-8 sm:px-16 py-12 space-y-[60px]">
-        <div className="text-center space-y-2">
+    <div
+      className="d-flex align-items-center justify-content-center min-vh-100 bg-brown-500"
+      style={{ paddingBottom: 120 }}
+    >
+      <div
+        className="bg-white rounded-4 shadow-lg w-100 px-4 px-sm-5 py-5 d-flex flex-column gap-5"
+        style={{ maxWidth: 804 }}
+      >
+        <div className="text-center d-flex flex-column gap-2">
           <img
             src="./assets/orderSuccessful.png"
             alt="Order Success"
-            className="mx-auto w-[140px] h-[140px]"
+            className="mx-auto"
+            style={{ width: 140, height: 140 }}
             loading="lazy"
             decoding="async"
           />
-          <h2 className="text-display-3 text-heading-black font-bold text-center">
+          <h2 className="fs-display-3 text-heading-black fw-bold text-center mb-0">
             Thank you!
           </h2>
-          <p className="text-dm-base font-semibold text-brown-1000">
+          <p className="fs-dm-base fw-semibold text-brown-1000 mb-0">
             YOUR ORDER HAS BEEN PLACED.
           </p>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-display-4 font-bold">
+        <div className="d-flex flex-column gap-3">
+          <h3 className="fs-display-4 fw-bold mb-0">
             Order <span className="text-orange-500">Details</span>
           </h3>
-          <ul className="space-y-2 text-dm-base text-heading-black">
-            <li className="flex justify-between ">
+          <ul className="d-flex flex-column gap-2 fs-dm-base text-heading-black list-unstyled mb-0">
+            <li className="d-flex justify-content-between">
               <span>Order Date</span>
-              <span className="font-medium">
+              <span className="fw-medium">
                 {new Date(orderDetails.orderDate).toLocaleDateString()}
               </span>
             </li>
-            <li className="flex justify-between">
+            <li className="d-flex justify-content-between">
               <span>Number of Items</span>
-              <span className="font-medium">{cartItems.length}</span>
+              <span className="fw-medium">{cartItems.length}</span>
             </li>
-            <li className="flex justify-between">
+            <li className="d-flex justify-content-between">
               <span>Shipping Address</span>
-              <span className="font-medium">{customerDetails.address}</span>
+              <span className="fw-medium">{customerDetails.address}</span>
             </li>
-            <li className="flex justify-between">
+            <li className="d-flex justify-content-between">
               <span>Delivery Fee</span>
-              <span className="font-medium">
+              <span className="fw-medium">
                 ${orderDetails.priceInfo.shipping}
               </span>
             </li>
           </ul>
-          <hr className="border-brown-700 my-4" />
-          <div className="flex justify-between text-dm-base text-heading-black font-bold">
+          <hr className="border-brown-700 my-3" />
+          <div className="d-flex justify-content-between fs-dm-base text-heading-black fw-bold">
             <span>Total</span>
             <span>${totalPrice.toFixed(2)}</span>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-display-4 font-bold">Products</h3>
-          <ul className="space-y-2 text-dm-base text-heading-black">
+        <div className="d-flex flex-column gap-3">
+          <h3 className="fs-display-4 fw-bold mb-0">Products</h3>
+          <ul className="d-flex flex-column gap-2 fs-dm-base text-heading-black list-unstyled mb-0">
             {cartItems.map((item) => (
-              <li key={item.id} className="flex justify-between">
+              <li key={item.id} className="d-flex justify-content-between">
                 <span>
                   {item.productName} (x{item.quantity})
                 </span>
-                <span className="font-medium">${item.price.toFixed(2)}</span>
+                <span className="fw-medium">${item.price.toFixed(2)}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-display-4 font-bold">Customer Details</h3>
-          <ul className="space-y-2 text-dm-base text-heading-black ">
-            <li className="flex justify-between">
+        <div className="d-flex flex-column gap-3">
+          <h3 className="fs-display-4 fw-bold mb-0">Customer Details</h3>
+          <ul className="d-flex flex-column gap-2 fs-dm-base text-heading-black list-unstyled mb-0">
+            <li className="d-flex justify-content-between">
               <span>Customer Name</span>
-              <span className="font-medium">
+              <span className="fw-medium">
                 {customerDetails.firstName} {customerDetails.lastName}
               </span>
             </li>
-            <li className="flex justify-between ">
+            <li className="d-flex justify-content-between">
               <span>Email</span>
-              <span className="font-medium">{customerDetails.email}</span>
+              <span className="fw-medium">{customerDetails.email}</span>
             </li>
-            <li className="flex justify-between">
+            <li className="d-flex justify-content-between">
               <span>Phone</span>
-              <span className="font-medium">{customerDetails.phone}</span>
+              <span className="fw-medium">{customerDetails.phone}</span>
             </li>
           </ul>
         </div>

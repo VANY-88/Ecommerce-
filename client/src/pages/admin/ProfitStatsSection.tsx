@@ -9,6 +9,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
 import api from "../../services/api";
 import { ApiResponse, MonthlyProfit } from "../../types/api";
 import { exportToExcel, exportToPdf } from "../../utils/exportReport";
@@ -80,22 +83,24 @@ function ProfitStatsSection() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-xl font-bold text-heading-black">Profit by Month</h2>
-        <div className="flex gap-3">
-          <button
+    <div className="d-flex flex-column gap-4">
+      <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <h2 className="fs-4 fw-bold text-heading-black">Profit by Month</h2>
+        <div className="d-flex gap-3">
+          <Button
             onClick={handleExportExcel}
-            className="bg-brown-300 text-heading-black px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 hover:text-white transition-colors duration-200"
+            className="bg-brown-300 text-heading-black border-0 fw-semibold"
+            style={{ padding: "0.5rem 1rem", borderRadius: "0.5rem" }}
           >
             Export Excel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleExportPdf}
-            className="bg-brown-300 text-heading-black px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 hover:text-white transition-colors duration-200"
+            className="bg-brown-300 text-heading-black border-0 fw-semibold"
+            style={{ padding: "0.5rem 1rem", borderRadius: "0.5rem" }}
           >
             Export PDF
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -103,23 +108,25 @@ function ProfitStatsSection() {
         <p className="text-brown-1000">No orders yet to compute profit statistics.</p>
       ) : (
         <>
-          <div className="bg-white rounded-2xl border border-brown-600 p-4 h-[360px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Revenue" fill="#948A74" />
-                <Bar dataKey="Cost" fill="#D74800" />
-                <Bar dataKey="Profit" fill="#FF7029" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <Card className="border border-brown-600 rounded-4" style={{ height: "360px" }}>
+            <Card.Body style={{ height: "100%" }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="Revenue" fill="#948A74" />
+                  <Bar dataKey="Cost" fill="#D74800" />
+                  <Bar dataKey="Profit" fill="#FF7029" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
 
-          <div className="overflow-x-auto bg-white rounded-2xl border border-brown-600">
-            <table className="w-full text-left text-sm">
+          <div className="bg-white rounded-4 border border-brown-600" style={{ overflowX: "auto" }}>
+            <Table responsive className="mb-0 text-start" style={{ fontSize: "0.875rem" }}>
               <thead className="bg-brown-300 text-brown-1000">
                 <tr>
                   <th className="px-4 py-3">Month</th>
@@ -131,16 +138,16 @@ function ProfitStatsSection() {
               </thead>
               <tbody>
                 {data.map((m) => (
-                  <tr key={`${m.year}-${m.month}`} className="border-t border-brown-600">
-                    <td className="px-4 py-3 font-medium text-heading-black">{monthLabel(m.year, m.month)}</td>
+                  <tr key={`${m.year}-${m.month}`} className="border-top border-brown-600">
+                    <td className="px-4 py-3 fw-medium text-heading-black">{monthLabel(m.year, m.month)}</td>
                     <td className="px-4 py-3">${m.revenue.toFixed(2)}</td>
                     <td className="px-4 py-3">${m.cost.toFixed(2)}</td>
-                    <td className="px-4 py-3 font-semibold text-orange-500">${m.profit.toFixed(2)}</td>
+                    <td className="px-4 py-3 fw-semibold text-orange-500">${m.profit.toFixed(2)}</td>
                     <td className="px-4 py-3">{m.ordersCount}</td>
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         </>
       )}

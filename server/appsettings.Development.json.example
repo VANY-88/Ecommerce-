@@ -1,0 +1,10 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=WebShopDb;Trusted_Connection=True;TrustServerCertificate=True;"
+  },
+  "Jwt": {
+    "Secret": "replace-with-a-random-secret-at-least-32-bytes-long",
+    "Issuer": "WebShop.Api",
+    "Audience": "WebShop.Client"
+  }
+}

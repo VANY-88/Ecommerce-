@@ -15,6 +15,11 @@ client/.env.local
 client/.env.development.local
 client/.env.test.local
 client/.env.production.local
+server/appsettings.Development.json
+
+# .NET build output
+server/bin/
+server/obj/
 
 # Build output
 client/build/

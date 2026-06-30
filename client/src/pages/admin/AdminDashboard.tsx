@@ -4,8 +4,9 @@ import InventorySection from "./InventorySection";
 import SoldItemsSection from "./SoldItemsSection";
 import ProfitStatsSection from "./ProfitStatsSection";
 import BestSellersSection from "./BestSellersSection";
+import SettingsSection from "./SettingsSection";
 
-const TABS = ["Inventory", "Sold Items", "Profit Stats", "Best Sellers"] as const;
+const TABS = ["Inventory", "Sold Items", "Profit Stats", "Best Sellers", "Settings"] as const;
 type Tab = (typeof TABS)[number];
 
 function AdminDashboard() {
@@ -43,6 +44,7 @@ function AdminDashboard() {
         {activeTab === "Sold Items" && <SoldItemsSection />}
         {activeTab === "Profit Stats" && <ProfitStatsSection />}
         {activeTab === "Best Sellers" && <BestSellersSection />}
+        {activeTab === "Settings" && <SettingsSection />}
       </div>
     </div>
   );

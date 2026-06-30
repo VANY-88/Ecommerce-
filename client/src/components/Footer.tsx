@@ -50,8 +50,8 @@ const Footer: React.FC = () => {
               Furnitech
             </h1>
           </div>
-          <h2 className="fs-6 font-dm-sans fw-normal" style={{ maxWidth: "280px" }}>
-            Copyright © 2024 Furnitech | All Rights Reserved
+          <h2 className="fs-6 font-dm-sans fw-normal text-neutral-text-gray" style={{ maxWidth: "280px" }}>
+            Furnitech brings quality, affordable furniture and home decor to your doorstep — making it simple to create a space you love.
           </h2>
         </div>
 

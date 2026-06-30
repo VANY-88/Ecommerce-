@@ -13,6 +13,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<AppSettings> AppSettings => Set<AppSettings>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -67,6 +68,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 pi.Property(p => p.Subtotal).HasPrecision(18, 2);
                 pi.Property(p => p.Shipping).HasPrecision(18, 2);
                 pi.Property(p => p.Tax).HasPrecision(18, 2);
+                pi.Property(p => p.TaxRate).HasPrecision(18, 4);
                 pi.Property(p => p.Total).HasPrecision(18, 2);
             });
             entity.OwnsOne(o => o.Customer, c =>
@@ -81,6 +83,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany()
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<AppSettings>(entity =>
+        {
+            entity.Property(s => s.TaxRate).HasColumnType("decimal(18,4)");
+            entity.Property(s => s.ShippingFee).HasColumnType("decimal(18,2)");
         });
     }
 }

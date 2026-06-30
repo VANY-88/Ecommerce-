@@ -19,6 +19,8 @@ const ProductPage = lazy(() => import("./pages/ProductPage"));
 const SingleProductPage = lazy(() => import("./pages/SingleProductPage"));
 const Cart = lazy(() => import("./pages/Cart"));
 const ShippingDetails = lazy(() => import("./pages/ShippingDetails"));
+const Payment = lazy(() => import("./pages/Payment"));
+const PaymentResult = lazy(() => import("./pages/PaymentResult"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -76,6 +78,8 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/landing" />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/shipping" element={<ShippingDetails />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/payment/result" element={<PaymentResult />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />

@@ -8,6 +8,8 @@ using WebShop.Api.Common.Middleware;
 using WebShop.Api.Data;
 using WebShop.Api.Data.Seed;
 using WebShop.Api.Models.Entities;
+using WebShop.Api.Payments;
+using WebShop.Api.Payments.Interfaces;
 using WebShop.Api.Repositories;
 using WebShop.Api.Repositories.Interfaces;
 using WebShop.Api.Services;
@@ -59,8 +61,16 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequiredLength = 8;
+});
+
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var jwtSection = builder.Configuration.GetSection("Jwt");
+
+builder.Services.Configure<VnPayOptions>(builder.Configuration.GetSection("VnPay"));
+builder.Services.Configure<MomoOptions>(builder.Configuration.GetSection("Momo"));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -84,11 +94,14 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<IVnPayService, VnPayService>();
+builder.Services.AddHttpClient<IMomoService, MomoService>();
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IRepository<AppSettings>, Repository<AppSettings>>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -96,6 +109,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 var app = builder.Build();
 
@@ -104,6 +118,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+app.UseHttpsRedirection();
 
 app.UseResponseCompression();
 
@@ -135,6 +155,7 @@ using (var scope = app.Services.CreateScope())
     await AdminSeeder.SeedAsync(userManager, roleManager);
     await CategorySeeder.SeedAsync(dbContext);
     await ProductSeeder.SeedAsync(dbContext);
+    await AppSettingsSeeder.SeedAsync(dbContext);
 }
 
 app.Run();

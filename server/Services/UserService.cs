@@ -103,6 +103,35 @@ public class UserService : IUserService
         return ToDto(user, roles);
     }
 
+    public async Task<UserDto> UpdateAsync(string id, UpdateUserDto dto)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            throw ApiException.NotFound("User not found!");
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.FirstName))
+        {
+            user.FirstName = Capitalize(dto.FirstName);
+        }
+        if (!string.IsNullOrWhiteSpace(dto.LastName))
+        {
+            user.LastName = Capitalize(dto.LastName);
+        }
+        user.PhoneNumber = dto.Phone;
+        user.Address = dto.Address;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw ApiException.BadRequest("Unable to update profile.", result.Errors.Select(e => e.Description));
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        return ToDto(user, roles);
+    }
+
     private static string Capitalize(string value) =>
         string.IsNullOrEmpty(value) ? value : char.ToUpper(value[0]) + value[1..];
 

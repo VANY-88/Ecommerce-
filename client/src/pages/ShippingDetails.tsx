@@ -4,7 +4,7 @@ import api from "../services/api";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
 import BackButton from "../components/BackButton";
-import { ApiResponse, Order, User } from "../types/api";
+import { ApiResponse, User } from "../types/api";
 
 interface ShippingLocationState {
   cartId?: number;
@@ -56,49 +56,21 @@ function ShippingDetails() {
 
   const isValid = email && phone && address && firstName && lastName;
 
-  const handleShippingInfo = async (e: React.FormEvent) => {
+  const handleShippingInfo = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isValid) return;
 
-    try {
-      const userId = localStorage.getItem("userId");
-
-      const orderData = {
+    navigate("/payment", {
+      state: {
         cartId,
-        userId,
-        priceInfo: {
-          subtotal: Number(subtotal),
-          shipping: Number(shipping),
-          tax: Number(tax),
-          total: Number(total),
-        },
-        price: Number(total),
-        customer: {
-          firstName,
-          lastName,
-          email,
-          phone,
-          address,
-        },
-      };
-
-      const response = await api.post<ApiResponse<Order>>("/orders/add", orderData);
-
-      if (response.data.success && response.data.data) {
-        const orderId = response.data.data.id;
-        console.log("Order created successfully:", orderId);
-        navigate("/checkout", {
-          state: {
-            orderId,
-          },
-        });
-      } else {
-        console.error("Error creating order:", response.data.msg);
-      }
-    } catch (err) {
-      console.error("Error submitting shipping details:", err);
-    }
+        subtotal,
+        shipping,
+        tax,
+        total,
+        customer: { firstName, lastName, email, phone, address },
+      },
+    });
   };
 
   const handleLoginRedirect = () => {

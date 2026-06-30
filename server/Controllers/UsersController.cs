@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebShop.Api.Common;
 using WebShop.Api.DTOs.Auth;
+using WebShop.Api.DTOs.Users;
 using WebShop.Api.Services.Interfaces;
 
 namespace WebShop.Api.Controllers;
@@ -62,5 +63,18 @@ public class UsersController : ControllerBase
         }
         var user = await _service.GetByIdAsync(id);
         return Ok(ApiResponse<object>.Ok(user));
+    }
+
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(string id, UpdateUserDto dto)
+    {
+        var callerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (callerId != id && !User.IsInRole("Admin"))
+        {
+            throw ApiException.Forbidden("You can only update your own profile.");
+        }
+        var user = await _service.UpdateAsync(id, dto);
+        return Ok(ApiResponse<object>.Ok(user, "Profile updated successfully!"));
     }
 }

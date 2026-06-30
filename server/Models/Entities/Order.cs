@@ -5,6 +5,7 @@ public class PriceInfo
     public decimal Subtotal { get; set; }
     public decimal Shipping { get; set; }
     public decimal Tax { get; set; }
+    public decimal TaxRate { get; set; }
     public decimal Total { get; set; }
 }
 
@@ -26,6 +27,9 @@ public class Order
     public PriceInfo PriceInfo { get; set; } = null!;
     public OrderCustomer? Customer { get; set; }
     public string Status { get; set; } = "Shipped";
+    public string PaymentMethod { get; set; } = "COD";
+    public string PaymentStatus { get; set; } = "NotApplicable";
+    public string? GatewayTransactionId { get; set; }
     public DateTime OrderDate { get; set; }
 
     public Cart Cart { get; set; } = null!;

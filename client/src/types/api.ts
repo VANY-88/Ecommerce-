@@ -95,7 +95,13 @@ export interface PriceInfo {
   subtotal: number;
   shipping: number;
   tax: number;
+  taxRate: number;
   total: number;
+}
+
+export interface AppSettings {
+  taxRate: number;
+  shippingFee: number;
 }
 
 export interface OrderCustomer {
@@ -106,6 +112,9 @@ export interface OrderCustomer {
   address: string;
 }
 
+export type PaymentMethod = "COD" | "VNPay" | "Momo";
+export type PaymentStatus = "NotApplicable" | "Pending" | "Paid" | "Failed";
+
 export interface Order {
   id: number;
   cartId: number;
@@ -114,7 +123,14 @@ export interface Order {
   priceInfo: PriceInfo;
   customer?: OrderCustomer;
   status: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  gatewayTransactionId?: string | null;
   orderDate: string;
   user?: User | null;
   cart?: Cart | null;
+}
+
+export interface CreatePaymentResponse {
+  paymentUrl: string;
 }

@@ -11,4 +11,5 @@ public interface IOrderService
     Task<OrderDto> UpdateAsync(int orderId, UpdateOrderDto dto);
     Task RemoveAsync(int orderId);
     Task<List<OrderDto>> GetByUserFlatAsync(string userId);
+    Task<OrderDto> UpdatePaymentResultAsync(int orderId, bool success, string? gatewayTransactionId);
 }

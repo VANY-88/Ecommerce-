@@ -11,15 +11,23 @@ namespace WebShop.Api.Services;
 
 public class OrderService : IOrderService
 {
+    private static readonly HashSet<string> AllowedPaymentMethods = new() { "COD", "VNPay", "Momo" };
+
     private readonly IOrderRepository _orderRepository;
     private readonly ICartRepository _cartRepository;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ISettingsService _settingsService;
 
-    public OrderService(IOrderRepository orderRepository, ICartRepository cartRepository, UserManager<ApplicationUser> userManager)
+    public OrderService(
+        IOrderRepository orderRepository,
+        ICartRepository cartRepository,
+        UserManager<ApplicationUser> userManager,
+        ISettingsService settingsService)
     {
         _orderRepository = orderRepository;
         _cartRepository = cartRepository;
         _userManager = userManager;
+        _settingsService = settingsService;
     }
 
     public async Task<List<OrderDto>> GetAllByUserDetailedAsync(string userId)
@@ -56,17 +64,38 @@ public class OrderService : IOrderService
             throw ApiException.BadRequest("Cart is already completed!");
         }
 
+        var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "COD" : dto.PaymentMethod;
+        if (!AllowedPaymentMethods.Contains(paymentMethod))
+        {
+            throw ApiException.BadRequest("Invalid payment method.");
+        }
+        var isQrPayment = paymentMethod is "VNPay" or "Momo";
+
+        // Price is recomputed server-side from the cart's own server-maintained total
+        // (never trust client-supplied Price/PriceInfo) since this amount now drives
+        // a real gateway payment URL. Tax rate and shipping fee likewise come from the
+        // server-side AppSettings row (admin-only to change), not constants or client input,
+        // and the rate actually applied is snapshotted onto the order so it stays accurate
+        // even if the admin changes the rate later.
+        var settings = await _settingsService.GetAsync();
+        var subtotal = cart.TotalPrice;
+        var shipping = settings.ShippingFee;
+        var taxRate = settings.TaxRate;
+        var tax = Math.Round(subtotal * taxRate, 2);
+        var total = subtotal + shipping + tax;
+
         var order = new Order
         {
             CartId = dto.CartId,
             UserId = dto.UserId,
-            Price = dto.Price,
+            Price = total,
             PriceInfo = new PriceInfo
             {
-                Subtotal = dto.PriceInfo.Subtotal,
-                Shipping = dto.PriceInfo.Shipping,
-                Tax = dto.PriceInfo.Tax,
-                Total = dto.PriceInfo.Total,
+                Subtotal = subtotal,
+                Shipping = shipping,
+                Tax = tax,
+                TaxRate = taxRate,
+                Total = total,
             },
             Customer = dto.Customer == null ? null : new OrderCustomer
             {
@@ -76,13 +105,44 @@ public class OrderService : IOrderService
                 Phone = dto.Customer.Phone,
                 Address = dto.Customer.Address,
             },
-            Status = "Shipped",
+            Status = isQrPayment ? "PendingPayment" : "Shipped",
+            PaymentMethod = paymentMethod,
+            PaymentStatus = isQrPayment ? "Pending" : "NotApplicable",
             OrderDate = DateTime.UtcNow,
         };
 
         cart.Status = "Completed";
 
         await _orderRepository.AddAsync(order);
+        await _orderRepository.SaveChangesAsync();
+        return ToDto(order);
+    }
+
+    public async Task<OrderDto> UpdatePaymentResultAsync(int orderId, bool success, string? gatewayTransactionId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+        if (order == null)
+        {
+            throw ApiException.BadRequest("Order not found!");
+        }
+
+        if (order.PaymentStatus != "Pending")
+        {
+            // Already finalized (Paid/Failed) — ignore duplicate/late gateway callbacks
+            // so a stale or out-of-order delivery can't regress a Paid order.
+            return ToDto(order);
+        }
+
+        order.PaymentStatus = success ? "Paid" : "Failed";
+        if (success)
+        {
+            order.Status = "Shipped";
+        }
+        if (!string.IsNullOrEmpty(gatewayTransactionId))
+        {
+            order.GatewayTransactionId = gatewayTransactionId;
+        }
+
         await _orderRepository.SaveChangesAsync();
         return ToDto(order);
     }
@@ -141,6 +201,7 @@ public class OrderService : IOrderService
             Subtotal = order.PriceInfo.Subtotal,
             Shipping = order.PriceInfo.Shipping,
             Tax = order.PriceInfo.Tax,
+            TaxRate = order.PriceInfo.TaxRate,
             Total = order.PriceInfo.Total,
         },
         Customer = order.Customer == null ? null : new OrderCustomerDto
@@ -152,6 +213,9 @@ public class OrderService : IOrderService
             Address = order.Customer.Address,
         },
         Status = order.Status,
+        PaymentMethod = order.PaymentMethod,
+        PaymentStatus = order.PaymentStatus,
+        GatewayTransactionId = order.GatewayTransactionId,
         OrderDate = order.OrderDate,
         User = order.User == null ? null : new UserDto
         {

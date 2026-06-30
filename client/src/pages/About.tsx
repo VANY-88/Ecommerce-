@@ -11,7 +11,7 @@ const teamMembers = [
     description:
       "Huy builds the platform end-to-end — from the ASP.NET Core API and database design to the pixel-perfect, responsive React interface on top of it.",
     imageUrl: "./assets/huy-avatar.webp",
-    skills: ["React", "TypeScript", "ASP.NET Core", "C#", "SQL Server", "Tailwind CSS"],
+    skills: ["React", "TypeScript", "ASP.NET Core", "C#", "SQL Server", "Bootstrap"],
   },
 ];
 
@@ -85,7 +85,7 @@ function About() {
             <span className="text-orange-400">loved by thousands</span>
           </h1>
           <p className="text-brown-700 fs-3" style={{ lineHeight: 1.6 }}>
-            WEB-SHOP started as a passion project — one developer who believed
+            Furnitech started as a passion project — one developer who believed
             online shopping could be simpler, faster, and actually enjoyable.
           </p>
         </div>
@@ -123,7 +123,7 @@ function About() {
             </h2>
             <p className="text-brown-1000 fs-dm-base">
               We were tired of online stores that were slow, cluttered, and hard to trust.
-              So we built WEB-SHOP — a store we'd actually want to use ourselves.
+              So we built Furnitech — a store we'd actually want to use ourselves.
             </p>
             <p className="text-brown-1000 fs-dm-base">
               From the first commit to the latest deploy, every decision has been made

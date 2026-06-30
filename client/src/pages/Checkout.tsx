@@ -94,6 +94,18 @@ function Checkout() {
                 ${orderDetails.priceInfo.shipping}
               </span>
             </li>
+            <li className="d-flex justify-content-between">
+              <span>Tax ({(orderDetails.priceInfo.taxRate * 100).toFixed(0)}%)</span>
+              <span className="fw-medium">
+                ${orderDetails.priceInfo.tax.toFixed(2)}
+              </span>
+            </li>
+            <li className="d-flex justify-content-between">
+              <span>Payment Method</span>
+              <span className="fw-medium">
+                {orderDetails.paymentMethod} ({orderDetails.paymentStatus})
+              </span>
+            </li>
           </ul>
           <hr className="border-brown-700 my-3" />
           <div className="d-flex justify-content-between fs-dm-base text-heading-black fw-bold">

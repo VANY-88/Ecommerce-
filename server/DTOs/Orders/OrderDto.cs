@@ -8,6 +8,7 @@ public class PriceInfoDto
     public decimal Subtotal { get; set; }
     public decimal Shipping { get; set; }
     public decimal Tax { get; set; }
+    public decimal TaxRate { get; set; }
     public decimal Total { get; set; }
 }
 
@@ -29,6 +30,9 @@ public class OrderDto
     public PriceInfoDto PriceInfo { get; set; } = null!;
     public OrderCustomerDto? Customer { get; set; }
     public string Status { get; set; } = null!;
+    public string PaymentMethod { get; set; } = null!;
+    public string PaymentStatus { get; set; } = null!;
+    public string? GatewayTransactionId { get; set; }
     public DateTime OrderDate { get; set; }
     public UserDto? User { get; set; }
     public CartDto? Cart { get; set; }
@@ -41,6 +45,7 @@ public class CreateOrderDto
     public decimal Price { get; set; }
     public PriceInfoDto PriceInfo { get; set; } = null!;
     public OrderCustomerDto? Customer { get; set; }
+    public string PaymentMethod { get; set; } = "COD";
 }
 
 public class UpdateOrderDto

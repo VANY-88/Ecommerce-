@@ -249,3 +249,34 @@ body {
 .product-card-hover-img {
   transition: transform 0.3s;
 }
+
+// Category avatar (Products page "What are you looking for?" swatches)
+.category-avatar-ring {
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid map-get($brand-colors, "brown-700");
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  &:hover {
+    border-color: map-get($brand-colors, "orange-500");
+    box-shadow: 0 0.5rem 1.25rem rgba(215, 72, 0, 0.18);
+    transform: translateY(-2px);
+  }
+  &.is-active {
+    border-color: map-get($brand-colors, "orange-500");
+    box-shadow: 0 0 0 4px rgba(215, 72, 0, 0.15);
+  }
+}
+.category-avatar-img {
+  transition: transform 0.3s;
+}
+.category-avatar-ring:hover .category-avatar-img {
+  transform: scale(1.08);
+}
+.category-avatar-fallback {
+  background: linear-gradient(160deg, map-get($brand-colors, "brown-700"), map-get($brand-colors, "brown-900"));
+  color: #fff;
+}
+.category-avatar-label {
+  letter-spacing: 0.04em;
+  transition: color 0.3s;
+}

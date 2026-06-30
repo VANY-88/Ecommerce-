@@ -10,4 +10,5 @@ public interface IUserService
     Task<List<UserDto>> GetAllAsync();
     Task<UserDto> GetByIdAsync(string id);
     Task<UserDto> GetMeAsync(string id);
+    Task<UserDto> UpdateAsync(string id, UpdateUserDto dto);
 }

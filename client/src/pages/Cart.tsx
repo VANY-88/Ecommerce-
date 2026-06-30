@@ -5,7 +5,7 @@ import Col from "react-bootstrap/Col";
 import Button from "../components/Button";
 import CartItemRow from "../components/CartItem";
 import api from "../services/api";
-import { ApiResponse, Cart as CartType, CartItem } from "../types/api";
+import { ApiResponse, Cart as CartType, CartItem, AppSettings } from "../types/api";
 
 function Cart() {
   const navigate = useNavigate();
@@ -13,6 +13,22 @@ function Cart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cartId, setCartId] = useState<number | null>(null);
+  const [settings, setSettings] = useState<AppSettings | null>(null);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const response = await api.get<ApiResponse<AppSettings>>("/settings");
+        if (response.data.success && response.data.data) {
+          setSettings(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error loading settings:", error);
+      }
+    }
+
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     async function fetchCart() {
@@ -47,11 +63,12 @@ function Cart() {
     () => cartItems.reduce((total, item) => total + item.price, 0),
     [cartItems]
   );
-  const shipping = 5;
-  const tax = useMemo(() => (subtotal * 0.1).toFixed(2), [subtotal]);
+  const shipping = settings?.shippingFee ?? 5;
+  const taxRate = settings?.taxRate ?? 0.1;
+  const tax = useMemo(() => (subtotal * taxRate).toFixed(2), [subtotal, taxRate]);
   const finalTotal = useMemo(
     () => (subtotal + shipping + parseFloat(tax)).toFixed(2),
-    [subtotal, tax]
+    [subtotal, shipping, tax]
   );
 
   const handleQuantityChange = async (itemId: number, newQuantity: number) => {

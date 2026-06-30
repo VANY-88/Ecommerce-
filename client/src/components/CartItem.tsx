@@ -16,14 +16,22 @@ const CartItem: React.FC<CartItemProps> = ({ item, onQuantityChange, onRemoveIte
 
   return (
     <div className="d-flex align-items-center justify-content-between border-bottom border-brown-700 pb-4 mb-4">
-      <img
-        src={item.image || "https://via.placeholder.com/150"}
-        alt={item.productName}
-        className="rounded"
-        style={{ width: "6rem", height: "6rem", objectFit: "cover" }}
-        loading="lazy"
-        decoding="async"
-      />
+      <div
+        className="rounded overflow-hidden bg-brown-300 d-flex align-items-center justify-content-center flex-shrink-0"
+        style={{ width: "6rem", height: "6rem" }}
+      >
+        <img
+          src={item.image || "https://via.placeholder.com/150"}
+          alt={item.productName}
+          className="w-100 h-100"
+          style={{ objectFit: "cover" }}
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
       <div className="flex-grow-1 px-4">
         <h3 className="fs-4 fw-semibold text-heading-black">
           {item.productName}

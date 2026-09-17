@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using WebShop.Api.Common;
 using WebShop.Api.DTOs.Payments;
 using WebShop.Api.Payments.Interfaces;
@@ -15,18 +16,18 @@ public class PaymentsController : ControllerBase
     private readonly IOrderService _orderService;
     private readonly IVnPayService _vnPayService;
     private readonly IMomoService _momoService;
-    private readonly IConfiguration _configuration;
+    private readonly FrontendOptions _frontendOptions;
 
     public PaymentsController(
         IOrderService orderService,
         IVnPayService vnPayService,
         IMomoService momoService,
-        IConfiguration configuration)
+        IOptions<FrontendOptions> frontendOptions)
     {
         _orderService = orderService;
         _vnPayService = vnPayService;
         _momoService = momoService;
-        _configuration = configuration;
+        _frontendOptions = frontendOptions.Value;
     }
 
     private void EnsureOwnerOrAdmin(string userId)
@@ -38,7 +39,7 @@ public class PaymentsController : ControllerBase
         }
     }
 
-    private string FrontendBaseUrl => _configuration["Frontend:BaseUrl"] ?? "http://localhost:3000";
+    private string FrontendBaseUrl => _frontendOptions.BaseUrl;
 
     [Authorize]
     [HttpPost("vnpay/create")]

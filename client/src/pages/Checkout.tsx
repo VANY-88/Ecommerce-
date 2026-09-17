@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Button from "../components/Button";
 import api from "../services/api";
 import { ApiResponse, Order, OrderCustomer, CartItem } from "../types/api";
@@ -9,35 +9,55 @@ function Checkout() {
   const [customerDetails, setCustomerDetails] = useState<OrderCustomer | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const { orderId } = (location.state as { orderId?: number }) || {};
+  const { orderId } = useParams<{ orderId: string }>();
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
         const response = await api.get<ApiResponse<Order>>(`/orders/${orderId}`);
         const data = response.data.data;
-        if (!data) return;
+        if (!data) {
+          setError("We couldn't find this order.");
+          return;
+        }
 
         setOrderDetails(data);
         setCustomerDetails(data.customer || null);
         setCartItems(data.cart?.items || []);
         setTotalPrice(data.price);
-      } catch (error) {
-        console.error("Error fetching order details:", error);
+      } catch (err) {
+        console.error("Error fetching order details:", err);
+        setError("We couldn't load this order. It may not exist, or you may not have access to it.");
       }
     };
 
     if (orderId) {
       fetchOrderDetails();
+    } else {
+      setError("Missing order reference.");
     }
   }, [orderId]);
 
   const handleGoHome = () => {
     navigate("/");
   };
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-brown-500 px-3">
+        <div
+          className="bg-white rounded-4 shadow-lg w-100 px-4 px-sm-5 py-5 text-center"
+          style={{ maxWidth: 600 }}
+        >
+          <h2 className="fs-display-3 text-heading-black fw-bold mb-3">Order not found</h2>
+          <p className="text-neutral-text-gray mb-4">{error}</p>
+          <Button text="Back to Homepage" type="button" onClick={handleGoHome} />
+        </div>
+      </div>
+    );
+  }
 
   if (!orderDetails || !customerDetails || cartItems.length === 0) {
     return <div className="text-center">Loading...</div>;

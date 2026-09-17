@@ -69,7 +69,7 @@ function Payment() {
       const orderId = createRes.data.data.id;
 
       if (selected === "COD") {
-        navigate("/checkout", { state: { orderId } });
+        navigate(`/checkout/${orderId}`);
         return;
       }
 

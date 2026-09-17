@@ -6,5 +6,20 @@
     "Secret": "replace-with-a-random-secret-at-least-32-bytes-long",
     "Issuer": "WebShop.Api",
     "Audience": "WebShop.Client"
+  },
+  "Frontend": {
+    "BaseUrl": "http://localhost:3000"
+  },
+  "VnPay": {
+    "ReturnUrl": "http://localhost:5000/api/payments/vnpay/return"
+  },
+  "Momo": {
+    "RedirectUrl": "http://localhost:5000/api/payments/momo/return",
+    "IpnUrl": "http://localhost:5000/api/payments/momo/ipn"
+  },
+  "R2": {
+    "AccountId": "replace-with-your-r2-account-id",
+    "AccessKeyId": "replace-with-your-r2-access-key-id",
+    "SecretAccessKey": "replace-with-your-r2-secret-access-key"
   }
 }

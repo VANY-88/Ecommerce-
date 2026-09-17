@@ -40,6 +40,19 @@ services:
       # https://<name>.onrender.com unless the name is taken).
       - key: Cors__AllowedOrigins__0
         value: https://furnitech-client.onrender.com
+      # Post-payment redirect target. Must match the client's public URL above —
+      # without this, payment redirects fall back to localhost.
+      - key: Frontend__BaseUrl
+        value: https://furnitech-client.onrender.com
+      # VNPay/Momo callback URLs point back at THIS service (the API), not the
+      # client — they're where the payment gateway redirects/calls after payment,
+      # which this API then forwards to Frontend__BaseUrl/payment/result.
+      - key: VnPay__ReturnUrl
+        value: https://furnitech-api.onrender.com/api/payments/vnpay/return
+      - key: Momo__RedirectUrl
+        value: https://furnitech-api.onrender.com/api/payments/momo/return
+      - key: Momo__IpnUrl
+        value: https://furnitech-api.onrender.com/api/payments/momo/ipn
 
   # React SPA (client/)
   - type: web

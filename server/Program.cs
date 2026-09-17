@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using WebShop.Api.Auth;
+using WebShop.Api.Common;
 using WebShop.Api.Common.Middleware;
 using WebShop.Api.Data;
 using WebShop.Api.Data.Seed;
@@ -71,8 +72,20 @@ builder.Services.Configure<IdentityOptions>(options =>
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 var jwtSection = builder.Configuration.GetSection("Jwt");
 
-builder.Services.Configure<VnPayOptions>(builder.Configuration.GetSection("VnPay"));
-builder.Services.Configure<MomoOptions>(builder.Configuration.GetSection("Momo"));
+builder.Services.AddOptions<VnPayOptions>()
+    .Bind(builder.Configuration.GetSection("VnPay"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<MomoOptions>()
+    .Bind(builder.Configuration.GetSection("Momo"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<FrontendOptions>()
+    .Bind(builder.Configuration.GetSection("Frontend"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddOptions<R2Options>()
     .Bind(builder.Configuration.GetSection("R2"))
@@ -169,7 +182,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await dbContext.Database.MigrateAsync();
     await RoleSeeder.SeedAsync(roleManager);
-    await AdminSeeder.SeedAsync(userManager, roleManager);
+    await AdminSeeder.SeedAsync(userManager, roleManager, app.Logger);
     await CategorySeeder.SeedAsync(dbContext);
     await ProductSeeder.SeedAsync(dbContext);
     await AppSettingsSeeder.SeedAsync(dbContext);

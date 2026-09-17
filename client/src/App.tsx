@@ -80,7 +80,7 @@ const App: React.FC = () => {
           <Route path="/shipping" element={<ShippingDetails />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/payment/result" element={<PaymentResult />} />
-          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/:orderId" element={<Checkout />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/admin/dashboard" element={<AdminRoute component={AdminDashboard} />} />

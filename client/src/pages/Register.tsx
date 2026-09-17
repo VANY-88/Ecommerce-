@@ -6,6 +6,7 @@ import api from "../services/api";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
 import PasswordInput from "../components/PasswordInput";
+import { toast } from "react-toastify";
 import { ApiResponse, User, SessionUser } from "../types/api";
 
 interface RegisterProps {
@@ -50,10 +51,9 @@ function Register({ onLogin }: RegisterProps) {
 
       onLogin({ _id: data.id, name, token, role });
       navigate("/");
-
-      console.log("User registered successfully!");
     } catch (err) {
-      console.log(err);
+      toast.error("Could not create your account. The email may already be in use — please check your details and try again.");
+      console.error("Error registering user:", err);
     }
   };
 

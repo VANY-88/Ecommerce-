@@ -12,7 +12,7 @@ function PaymentResult() {
 
   useEffect(() => {
     if (result === "success" && orderId) {
-      navigate("/checkout", { state: { orderId: Number(orderId) }, replace: true });
+      navigate(`/checkout/${orderId}`, { replace: true });
     }
   }, [result, orderId, navigate]);
 

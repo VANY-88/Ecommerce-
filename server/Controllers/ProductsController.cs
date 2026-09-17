@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebShop.Api.Common;
 using WebShop.Api.DTOs.Products;
 using WebShop.Api.Services.Interfaces;
+using WebShop.Api.Storage;
 
 namespace WebShop.Api.Controllers;
 
@@ -14,12 +15,12 @@ public class ProductsController : ControllerBase
     private const long MaxImageSizeBytes = 5 * 1024 * 1024;
 
     private readonly IProductService _service;
-    private readonly IWebHostEnvironment _env;
+    private readonly IImageStorageService _imageStorage;
 
-    public ProductsController(IProductService service, IWebHostEnvironment env)
+    public ProductsController(IProductService service, IImageStorageService imageStorage)
     {
         _service = service;
-        _env = env;
+        _imageStorage = imageStorage;
     }
 
     [HttpGet]
@@ -52,7 +53,7 @@ public class ProductsController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost("upload-image")]
-    public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
+    public async Task<IActionResult> UploadImage([FromForm] IFormFile file, CancellationToken ct)
     {
         if (file == null || file.Length == 0)
         {
@@ -69,18 +70,7 @@ public class ProductsController : ControllerBase
             throw ApiException.BadRequest("Image must be 5MB or smaller.");
         }
 
-        var uploadsDir = Path.Combine(_env.ContentRootPath, "wwwroot", "uploads", "products");
-        Directory.CreateDirectory(uploadsDir);
-
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-        var filePath = Path.Combine(uploadsDir, fileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        var url = $"{Request.Scheme}://{Request.Host}/uploads/products/{fileName}";
+        var url = await _imageStorage.UploadAsync(file, ct);
         return Ok(ApiResponse<object>.Ok(new { url }, "Image uploaded successfully!"));
     }
 

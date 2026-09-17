@@ -1,7 +1,9 @@
 using System.Text;
+using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using WebShop.Api.Auth;
@@ -15,10 +17,9 @@ using WebShop.Api.Repositories;
 using WebShop.Api.Repositories.Interfaces;
 using WebShop.Api.Services;
 using WebShop.Api.Services.Interfaces;
+using WebShop.Api.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
-
-Directory.CreateDirectory(Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "uploads", "products"));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -73,6 +74,11 @@ var jwtSection = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<VnPayOptions>(builder.Configuration.GetSection("VnPay"));
 builder.Services.Configure<MomoOptions>(builder.Configuration.GetSection("Momo"));
 
+builder.Services.AddOptions<R2Options>()
+    .Bind(builder.Configuration.GetSection("R2"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -112,6 +118,18 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var opts = sp.GetRequiredService<IOptions<R2Options>>().Value;
+    return new AmazonS3Client(opts.AccessKeyId, opts.SecretAccessKey, new AmazonS3Config
+    {
+        ServiceURL = $"https://{opts.AccountId}.r2.cloudflarestorage.com",
+        ForcePathStyle = true,
+        Timeout = TimeSpan.FromSeconds(20),
+    });
+});
+builder.Services.AddSingleton<IImageStorageService, R2ImageStorageService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -127,8 +145,6 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseResponseCompression();
-
-app.UseStaticFiles();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

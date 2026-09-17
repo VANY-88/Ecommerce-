@@ -17,6 +17,19 @@ services:
       # because it's marked `sync: false`.
       - key: ConnectionStrings__DefaultConnection
         sync: false
+      # Cloudflare R2 (product image storage). BucketName/PublicBaseUrl are
+      # not secret and can be edited directly here; the other 3 are real
+      # credentials — Render will prompt for them during Blueprint sync.
+      - key: R2__AccountId
+        sync: false
+      - key: R2__AccessKeyId
+        sync: false
+      - key: R2__SecretAccessKey
+        sync: false
+      - key: R2__BucketName
+        value: furnitech
+      - key: R2__PublicBaseUrl
+        value: https://pub-1eaa066d06f64d31ac4ce4020fbf10ab.r2.dev
       - key: Jwt__Secret
         generateValue: true
       - key: Jwt__Issuer

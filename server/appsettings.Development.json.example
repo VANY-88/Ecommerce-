@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=WebShopDb;Trusted_Connection=True;TrustServerCertificate=True;"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=WebShopDb;Username=postgres;Password=postgres"
   },
   "Jwt": {
     "Secret": "replace-with-a-random-secret-at-least-32-bytes-long",

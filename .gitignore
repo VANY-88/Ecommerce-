@@ -78,9 +78,6 @@ bun.lockb
 # Testing
 coverage/
 
-# Docker
-.dockerignore
-
 # Misc
 *.tgz
 *.gz

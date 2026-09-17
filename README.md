@@ -15,7 +15,7 @@ A full-stack e-commerce storefront for furniture, with a customer shopping exper
 
 **Backend** (`server/`)
 - ASP.NET Core 10 Web API
-- Entity Framework Core 10 + SQL Server
+- Entity Framework Core 10 + PostgreSQL (Npgsql)
 - ASP.NET Core Identity + JWT Bearer authentication
 - Swashbuckle / Swagger (API docs)
 
@@ -48,7 +48,7 @@ Admins log in with an Admin-role account and access the role-gated dashboard at 
 ### Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Node.js](https://nodejs.org/) (LTS)
-- SQL Server (local instance or container)
+- PostgreSQL (local instance or container), e.g. `docker run -d -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16-alpine`
 
 ### Backend setup
 ```bash
@@ -56,7 +56,7 @@ cd server
 cp appsettings.Development.json.example appsettings.Development.json
 ```
 Edit `appsettings.Development.json` and set:
-- `ConnectionStrings:DefaultConnection` to your SQL Server connection string
+- `ConnectionStrings:DefaultConnection` to your PostgreSQL connection string
 - `Jwt:Secret` to a real random secret (at least 32 bytes)
 
 Then run:
@@ -74,6 +74,23 @@ npm install
 npm start
 ```
 The app runs at `http://localhost:3000` and talks to the API via `REACT_APP_API_URL` (set in `.env`).
+
+## Deploying to Render
+
+The repo includes a [`render.yaml`](render.yaml) Blueprint that provisions two resources: the API as a Dockerized web service, and the client as a static site. The database is **not** hosted on Render — it points to a free [Neon](https://neon.tech) Postgres project instead, since Render's own free Postgres tier gets deleted after 30 days and Neon's doesn't.
+
+1. Create a free project at [neon.tech](https://neon.tech). From the dashboard, copy the **pooled connection string** (hostname contains `-pooler`) — it looks like `postgresql://user:password@ep-xxxx-pooler.region.aws.neon.tech/dbname?sslmode=require`.
+2. Push this repo to GitHub (Render deploys from a Git repo).
+3. In the Render dashboard: **New > Blueprint**, pick the repo. Render reads `render.yaml` and shows the two resources to create.
+4. Before applying, check the two placeholder URLs in `render.yaml` (`Cors__AllowedOrigins__0` and `REACT_APP_API_URL`) — they assume the service names `furnitech-api` / `furnitech-client` are available, which give you `https://furnitech-api.onrender.com` / `https://furnitech-client.onrender.com`. If Render appends a random suffix instead (name already taken), update both values to match and redeploy.
+5. Render will prompt you for the `ConnectionStrings__DefaultConnection` value during setup (it's marked `sync: false` in the blueprint so the secret never lives in git) — paste the Neon connection string from step 1.
+6. Apply the blueprint. Render builds the API (which runs EF Core migrations and seeds demo data against Neon automatically on startup — see `Program.cs`), then the static site.
+7. Change or remove the [demo accounts](#demo-accounts) and rotate the VNPay/Momo sandbox keys in `appsettings.json` before treating this as a real production deployment.
+
+**Known limitations of this setup:**
+- Render's free web service spins down after 15 minutes of inactivity; the first request after that takes a few seconds to cold-start. (The Neon DB and the static site don't have this problem.)
+- Neon's free branch auto-suspends when idle, but wakes on the next connection in about a second — no manual recreation needed, unlike Render's free Postgres.
+- Uploaded product images (`server/wwwroot/uploads/products`) are written to the container's local disk, which is **ephemeral** on Render — they're wiped on every deploy/restart unless you attach a paid persistent Disk, or switch the upload storage to an object store (e.g. Cloudflare R2 / S3).
 
 ## Demo Accounts
 

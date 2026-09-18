@@ -4,6 +4,7 @@ using WebShop.Api.Common;
 using WebShop.Api.DTOs.Auth;
 using WebShop.Api.DTOs.Users;
 using WebShop.Api.Models.Entities;
+using WebShop.Api.Repositories.Interfaces;
 using WebShop.Api.Services.Interfaces;
 
 namespace WebShop.Api.Services;
@@ -12,14 +13,16 @@ public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly TokenService _tokenService;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
 
-    public UserService(UserManager<ApplicationUser> userManager, TokenService tokenService)
+    public UserService(UserManager<ApplicationUser> userManager, TokenService tokenService, IRefreshTokenRepository refreshTokenRepository)
     {
         _userManager = userManager;
         _tokenService = tokenService;
+        _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<(UserDto User, string Token)> RegisterAsync(RegisterDto dto)
+    public async Task<(UserDto User, string Token, string RefreshToken)> RegisterAsync(RegisterDto dto)
     {
         var existing = await _userManager.FindByEmailAsync(dto.Email);
         if (existing != null)
@@ -47,10 +50,11 @@ public class UserService : IUserService
         var roles = await _userManager.GetRolesAsync(user);
 
         var token = _tokenService.GenerateToken(user, roles);
-        return (ToDto(user, roles), token);
+        var refreshToken = await IssueRefreshTokenAsync(user.Id);
+        return (ToDto(user, roles), token, refreshToken);
     }
 
-    public async Task<(UserDto User, string Token)> LoginAsync(LoginDto dto)
+    public async Task<(UserDto User, string Token, string RefreshToken)> LoginAsync(LoginDto dto)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null)
@@ -66,7 +70,73 @@ public class UserService : IUserService
 
         var roles = await _userManager.GetRolesAsync(user);
         var token = _tokenService.GenerateToken(user, roles);
-        return (ToDto(user, roles), token);
+        var refreshToken = await IssueRefreshTokenAsync(user.Id);
+        return (ToDto(user, roles), token, refreshToken);
+    }
+
+    public async Task<(string Token, string RefreshToken)> RefreshAsync(string refreshToken)
+    {
+        var hash = TokenService.HashToken(refreshToken);
+        var existing = await _refreshTokenRepository.GetActiveByHashAsync(hash);
+        if (existing == null)
+        {
+            throw ApiException.Unauthorized("Invalid or expired refresh token.");
+        }
+
+        var user = await _userManager.FindByIdAsync(existing.UserId);
+        if (user == null)
+        {
+            throw ApiException.Unauthorized("Invalid or expired refresh token.");
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var newAccessToken = _tokenService.GenerateToken(user, roles);
+        var newRefreshToken = TokenService.GenerateRefreshToken();
+        var newHash = TokenService.HashToken(newRefreshToken);
+
+        existing.RevokedAt = DateTime.UtcNow;
+        existing.ReplacedByTokenHash = newHash;
+        _refreshTokenRepository.Update(existing);
+
+        await _refreshTokenRepository.AddAsync(new RefreshToken
+        {
+            UserId = user.Id,
+            TokenHash = newHash,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.Add(TokenService.RefreshTokenLifetime),
+        });
+
+        await _refreshTokenRepository.SaveChangesAsync();
+
+        return (newAccessToken, newRefreshToken);
+    }
+
+    public async Task LogoutAsync(string refreshToken)
+    {
+        var hash = TokenService.HashToken(refreshToken);
+        var existing = await _refreshTokenRepository.GetByHashAsync(hash);
+        if (existing == null || existing.RevokedAt != null)
+        {
+            return;
+        }
+
+        existing.RevokedAt = DateTime.UtcNow;
+        _refreshTokenRepository.Update(existing);
+        await _refreshTokenRepository.SaveChangesAsync();
+    }
+
+    private async Task<string> IssueRefreshTokenAsync(string userId)
+    {
+        var refreshToken = TokenService.GenerateRefreshToken();
+        await _refreshTokenRepository.AddAsync(new RefreshToken
+        {
+            UserId = userId,
+            TokenHash = TokenService.HashToken(refreshToken),
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.Add(TokenService.RefreshTokenLifetime),
+        });
+        await _refreshTokenRepository.SaveChangesAsync();
+        return refreshToken;
     }
 
     public async Task<List<UserDto>> GetAllAsync()

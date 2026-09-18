@@ -5,8 +5,10 @@ namespace WebShop.Api.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<(UserDto User, string Token)> RegisterAsync(RegisterDto dto);
-    Task<(UserDto User, string Token)> LoginAsync(LoginDto dto);
+    Task<(UserDto User, string Token, string RefreshToken)> RegisterAsync(RegisterDto dto);
+    Task<(UserDto User, string Token, string RefreshToken)> LoginAsync(LoginDto dto);
+    Task<(string Token, string RefreshToken)> RefreshAsync(string refreshToken);
+    Task LogoutAsync(string refreshToken);
     Task<List<UserDto>> GetAllAsync();
     Task<UserDto> GetByIdAsync(string id);
     Task<UserDto> GetMeAsync(string id);

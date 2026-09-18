@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using WebShop.Api.DTOs.Carts;
 using WebShop.Api.DTOs.Users;
 
@@ -50,6 +51,8 @@ public class CreateOrderDto
 
 public class UpdateOrderDto
 {
+    [Range(0, double.MaxValue, ErrorMessage = "Price cannot be negative.")]
     public decimal Price { get; set; }
+
     public OrderCustomerDto? Customer { get; set; }
 }

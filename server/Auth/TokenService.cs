@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +10,8 @@ namespace WebShop.Api.Auth;
 
 public class TokenService
 {
+    public static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
+
     private readonly JwtOptions _options;
 
     public TokenService(IOptions<JwtOptions> options)
@@ -39,9 +42,15 @@ public class TokenService
             issuer: _options.Issuer,
             audience: _options.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
+            expires: DateTime.UtcNow.AddMinutes(30),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public static string GenerateRefreshToken() =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+    public static string HashToken(string token) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 }

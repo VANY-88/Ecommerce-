@@ -22,15 +22,29 @@ public class UsersController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        var (user, token) = await _service.RegisterAsync(dto);
-        return Ok(ApiResponse<object>.WithToken(user, token, "User registered successfully!"));
+        var (user, token, refreshToken) = await _service.RegisterAsync(dto);
+        return Ok(ApiResponse<object>.WithTokens(user, token, refreshToken, "User registered successfully!"));
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var (user, token) = await _service.LoginAsync(dto);
-        return Ok(ApiResponse<object>.WithToken(user, token, "User logged in successfully!"));
+        var (user, token, refreshToken) = await _service.LoginAsync(dto);
+        return Ok(ApiResponse<object>.WithTokens(user, token, refreshToken, "User logged in successfully!"));
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshTokenDto dto)
+    {
+        var (token, refreshToken) = await _service.RefreshAsync(dto.RefreshToken);
+        return Ok(ApiResponse<object>.WithTokens(new { }, token, refreshToken));
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(RefreshTokenDto dto)
+    {
+        await _service.LogoutAsync(dto.RefreshToken);
+        return Ok(ApiResponse<object>.Ok(msg: "Logged out."));
     }
 
     // Preserved as-is from the original API: despite the name, this returns ALL users, not the caller's profile.

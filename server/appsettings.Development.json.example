@@ -11,15 +11,22 @@
     "BaseUrl": "http://localhost:3000"
   },
   "VnPay": {
+    "TmnCode": "replace-with-your-vnpay-sandbox-tmn-code",
+    "HashSecret": "replace-with-your-vnpay-sandbox-hash-secret",
     "ReturnUrl": "http://localhost:5000/api/payments/vnpay/return"
   },
   "Momo": {
+    "PartnerCode": "replace-with-your-momo-sandbox-partner-code",
+    "AccessKey": "replace-with-your-momo-sandbox-access-key",
+    "SecretKey": "replace-with-your-momo-sandbox-secret-key",
     "RedirectUrl": "http://localhost:5000/api/payments/momo/return",
     "IpnUrl": "http://localhost:5000/api/payments/momo/ipn"
   },
   "R2": {
     "AccountId": "replace-with-your-r2-account-id",
     "AccessKeyId": "replace-with-your-r2-access-key-id",
-    "SecretAccessKey": "replace-with-your-r2-secret-access-key"
+    "SecretAccessKey": "replace-with-your-r2-secret-access-key",
+    "BucketName": "replace-with-your-r2-bucket-name",
+    "PublicBaseUrl": "replace-with-your-r2-public-base-url"
   }
 }

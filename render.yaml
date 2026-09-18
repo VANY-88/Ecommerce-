@@ -36,6 +36,19 @@ services:
         value: WebShop.Api
       - key: Jwt__Audience
         value: WebShop.Client
+      # VNPay/Momo merchant credentials. Declared here (sync:false) so the
+      # Blueprint documents and prompts for them; if they're already set on
+      # the live service outside this file, re-syncing won't overwrite them.
+      - key: VnPay__TmnCode
+        sync: false
+      - key: VnPay__HashSecret
+        sync: false
+      - key: Momo__PartnerCode
+        sync: false
+      - key: Momo__AccessKey
+        sync: false
+      - key: Momo__SecretKey
+        sync: false
       # Must match the client's public URL below (Render assigns
       # https://<name>.onrender.com unless the name is taken).
       - key: Cors__AllowedOrigins__0

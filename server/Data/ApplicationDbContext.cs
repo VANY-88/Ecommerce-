@@ -14,6 +14,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<AppSettings> AppSettings => Set<AppSettings>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -89,6 +90,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             entity.Property(s => s.TaxRate).HasColumnType("decimal(18,4)");
             entity.Property(s => s.ShippingFee).HasColumnType("decimal(18,2)");
+        });
+
+        builder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasIndex(rt => rt.TokenHash).IsUnique();
+            entity.HasOne(rt => rt.User)
+                .WithMany()
+                .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

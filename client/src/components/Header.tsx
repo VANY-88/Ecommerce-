@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import Button from "./Button";
+import LogoMark from "./LogoMark";
 import { SessionUser } from "../types/api";
 import { useHeaderTheme } from "../hooks/useHeaderTheme";
 
@@ -48,6 +49,11 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
     setMenuOpen(false);
   };
 
+  const handleContactClick = () => {
+    navigate("/contact");
+    setMenuOpen(false);
+  };
+
   const handleBlogClick = () => {
     navigate("/blog");
     setMenuOpen(false);
@@ -75,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
       className={`px-4 px-lg-5 py-3 site-header site-header--${theme}`}
     >
       <Navbar.Brand href={homeHref} className="d-flex align-items-center flex-shrink-0">
-        <img src="./assets/Cir.svg" alt="Logo" style={{ width: "2.25rem", height: "2.25rem" }} loading="lazy" decoding="async" />
+        <LogoMark className="logo-mark--header" />
         <span className="ms-3 header-logo-text font-dm-sans fs-4 fw-bolder">Furnitech</span>
       </Navbar.Brand>
 
@@ -97,6 +103,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
             </span>
           </Nav.Link>
           <Nav.Link onClick={handleAboutClick} className="nav-link-brand">About Us</Nav.Link>
+          <Nav.Link onClick={handleContactClick} className="nav-link-brand">Contact</Nav.Link>
           {user?.role === "Admin" && (
             <Nav.Link onClick={handleDashboardClick} className="nav-link-brand">Dashboard</Nav.Link>
           )}

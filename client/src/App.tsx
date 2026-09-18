@@ -25,6 +25,7 @@ const Payment = lazy(() => import("./pages/Payment"));
 const PaymentResult = lazy(() => import("./pages/PaymentResult"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
 const Blog = lazy(() => import("./pages/Blog"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 
@@ -86,6 +87,7 @@ const App: React.FC = () => {
             <Route path="/payment/result" element={<PaymentResult />} />
             <Route path="/checkout/:orderId" element={<PrivateRoute component={Checkout} />} />
             <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/admin/dashboard" element={<AdminRoute component={AdminDashboard} />} />
           </Routes>

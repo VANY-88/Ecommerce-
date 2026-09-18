@@ -352,6 +352,31 @@ body {
   transition: color 0.3s;
 }
 
+// Contact page cards (Contact.tsx "Email"/"Upwork" cards)
+.contact-card {
+  transition: box-shadow 0.3s, border-color 0.3s, transform 0.3s;
+  &:hover {
+    box-shadow: 0 0.5rem 1.5rem rgba(44, 0, 0, 0.12);
+    border-color: map-get($brand-colors, "orange-500") !important;
+    transform: translateY(-2px);
+  }
+  &:hover .contact-card-icon {
+    transform: scale(1.08);
+  }
+}
+.contact-card-icon {
+  transition: transform 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-card:hover {
+    transform: none;
+  }
+  .contact-card:hover .contact-card-icon {
+    transform: none;
+  }
+}
+
 // Login panel — line-art illustration
 .login-panel {
   --login-stroke: #{map-get($brand-colors, "orange-400")};
@@ -466,5 +491,71 @@ body {
   .login-illustration__svg,
   .login-illustration__glow {
     animation: none;
+  }
+}
+
+// Logo mark — draw-in on mount + hover glow (same convention as .login-panel above)
+.logo-mark {
+  --logo-stroke: #{map-get($brand-colors, "orange-400")};
+  --logo-stroke-hover: #{map-get($brand-colors, "orange-500")};
+  --logo-glow: rgba(255, 112, 41, 0.45);
+  overflow: visible;
+  transition: transform 0.25s ease;
+}
+.logo-mark__badge {
+  fill: map-get($brand-colors, "brown");
+  transition: filter 0.25s ease;
+}
+.logo-mark__glyph {
+  fill: none;
+  stroke: var(--logo-stroke);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: logo-draw 0.5s ease forwards;
+  transition: stroke 0.25s ease;
+}
+.logo-mark__glyph--top {
+  animation-delay: 0.1s;
+}
+.logo-mark__glyph--mid {
+  animation-delay: 0.2s;
+}
+.logo-mark__glyph--foot {
+  animation-delay: 0.3s;
+}
+.logo-mark:hover {
+  transform: scale(1.08);
+}
+.logo-mark:hover .logo-mark__glyph {
+  stroke: var(--logo-stroke-hover);
+}
+.logo-mark:hover .logo-mark__badge {
+  filter: drop-shadow(0 0 6px var(--logo-glow));
+}
+.logo-mark--header {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+.logo-mark--footer {
+  width: 39px;
+  height: 37px;
+}
+
+@keyframes logo-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-mark__glyph {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .logo-mark:hover {
+    transform: none;
   }
 }

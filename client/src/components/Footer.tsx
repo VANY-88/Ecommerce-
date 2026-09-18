@@ -32,7 +32,7 @@ const Footer: React.FC = () => {
           <div className="d-flex flex-column align-items-start gap-3">
             <h1 className="text-black font-dm-sans fs-5 fw-semibold">Product</h1>
             <div>
-              <span className={footerDisabledClass} style={footerDisabledStyle}>Categories</span>
+              <Link to="/products" className={footerLinkClass}>Categories</Link>
               <span className={footerDisabledClass} style={footerDisabledStyle}>Reviews</span>
               <span className={footerDisabledClass} style={footerDisabledStyle}>New Colections</span>
             </div>

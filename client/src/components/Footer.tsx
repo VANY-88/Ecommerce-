@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const FacebookIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -31,6 +32,8 @@ const YoutubeIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 const footerLinkClass = "footer-link text-neutral-text-gray font-dm-sans fs-6 text-decoration-none d-block mb-3";
+const footerDisabledClass = "text-neutral-text-gray font-dm-sans fs-6 d-block mb-3";
+const footerDisabledStyle: React.CSSProperties = { cursor: "default", opacity: 0.6 };
 
 const Footer: React.FC = () => {
   return (
@@ -61,9 +64,9 @@ const Footer: React.FC = () => {
           <div className="d-flex flex-column align-items-start gap-3">
             <h1 className="text-black font-dm-sans fs-5 fw-semibold">Product</h1>
             <div>
-              <a href="/" className={footerLinkClass}>Categories</a>
-              <a href="/" className={footerLinkClass}>Reviews</a>
-              <a href="/" className={footerLinkClass}>New Colections</a>
+              <span className={footerDisabledClass} style={footerDisabledStyle}>Categories</span>
+              <span className={footerDisabledClass} style={footerDisabledStyle}>Reviews</span>
+              <span className={footerDisabledClass} style={footerDisabledStyle}>New Colections</span>
             </div>
           </div>
 
@@ -71,8 +74,8 @@ const Footer: React.FC = () => {
           <div className="d-flex flex-column align-items-start gap-3">
             <h1 className="text-black font-dm-sans fs-5 fw-semibold">Company</h1>
             <div>
-              <a href="/" className={footerLinkClass}>About</a>
-              <a href="/" className={footerLinkClass}>Contact Us</a>
+              <Link to="/about" className={footerLinkClass}>About</Link>
+              <span className={footerDisabledClass} style={footerDisabledStyle}>Contact Us</span>
             </div>
           </div>
 
@@ -80,8 +83,8 @@ const Footer: React.FC = () => {
           <div className="d-flex flex-column align-items-start gap-3">
             <h1 className="text-black font-dm-sans fs-5 fw-semibold">Support</h1>
             <div>
-              <a href="/" className={footerLinkClass}>Help center</a>
-              <a href="/" className={footerLinkClass}>Chat support</a>
+              <span className={footerDisabledClass} style={footerDisabledStyle}>Help center</span>
+              <span className={footerDisabledClass} style={footerDisabledStyle}>Chat support</span>
             </div>
           </div>
 
@@ -89,26 +92,26 @@ const Footer: React.FC = () => {
           <div className="d-flex flex-column align-items-start gap-3">
             <h1 className="text-black font-dm-sans fs-5 fw-bold">Follow us</h1>
             <div className="d-flex flex-column align-items-start gap-3">
-              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+              <span className="footer-social d-flex align-items-center gap-2 text-decoration-none" style={{ cursor: "default" }}>
                 <span className="footer-social-icon"><FacebookIcon className="icon-social" /></span>
                 <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">Facebook</span>
-              </a>
-              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+              </span>
+              <span className="footer-social d-flex align-items-center gap-2 text-decoration-none" style={{ cursor: "default" }}>
                 <span className="footer-social-icon"><TwitterIcon className="icon-social" /></span>
                 <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">Twitter</span>
-              </a>
-              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+              </span>
+              <span className="footer-social d-flex align-items-center gap-2 text-decoration-none" style={{ cursor: "default" }}>
                 <span className="footer-social-icon"><InstagramIcon className="icon-social" /></span>
                 <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">Instagram</span>
-              </a>
-              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+              </span>
+              <span className="footer-social d-flex align-items-center gap-2 text-decoration-none" style={{ cursor: "default" }}>
                 <span className="footer-social-icon"><LinkedInIcon className="icon-social" /></span>
                 <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">LinkedIn</span>
-              </a>
-              <a href="/" className="footer-social d-flex align-items-center gap-2 text-decoration-none">
+              </span>
+              <span className="footer-social d-flex align-items-center gap-2 text-decoration-none" style={{ cursor: "default" }}>
                 <span className="footer-social-icon"><YoutubeIcon className="icon-social" /></span>
                 <span className="footer-social-label text-neutral-text-gray font-dm-sans fs-6">Youtube</span>
-              </a>
+              </span>
             </div>
           </div>
         </div>

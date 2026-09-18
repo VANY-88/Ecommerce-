@@ -119,13 +119,64 @@ $brand-colors: (
 }
 
 // Header
-.navbar-brand-transition {
+// --header-fg drives nav link / logo text color; theme classes below flip it.
+// Kept off Bootstrap's own !important-laden utilities (e.g. .text-black) so
+// this can actually win the cascade on both light and dark variants.
+.site-header {
+  --header-fg: #{map-get($brand-colors, "heading-black")};
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  transition: background-color 0.35s ease, border-color 0.35s ease;
+}
+
+.site-header--light {
+  background-color: rgba(255, 253, 249, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(44, 0, 0, 0.08);
+  --header-fg: #{map-get($brand-colors, "heading-black")};
+}
+
+.site-header--dark {
+  background-color: rgba(34, 14, 3, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  --header-fg: #fff;
+
+  // The Log Out button's default dark fill (heading-black) nearly matches
+  // this header's own dark background — give it a visible outline instead.
+  .btn-brand-primary {
+    background-color: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    &:hover,
+    &:focus {
+      background-color: map-get($brand-colors, "orange-500");
+      border-color: map-get($brand-colors, "orange-500");
+    }
+  }
+
+  // The icon circle's fill stays light in both themes (icon glyphs are
+  // always dark-on-light) — only its border needs to stay visible against
+  // a dark backdrop.
+  .icon-circle-btn {
+    border-color: rgba(255, 255, 255, 0.5);
+    &:hover {
+      border-color: map-get($brand-colors, "orange-500");
+    }
+  }
+}
+
+.header-logo-text {
+  color: var(--header-fg) !important;
+  transition: color 0.35s ease;
 }
 
 .nav-link-brand {
   position: relative;
-  color: map-get($brand-colors, "heading-black") !important;
+  color: var(--header-fg) !important;
   padding-bottom: 0.25rem;
   transition: color 0.2s;
 
@@ -170,6 +221,26 @@ $brand-colors: (
 .icon-sm {
   width: 1.5rem;
   height: 1.5rem;
+}
+
+// Scroll-reveal (see components/Reveal.tsx)
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 // Footer
@@ -279,4 +350,121 @@ body {
 .category-avatar-label {
   letter-spacing: 0.04em;
   transition: color 0.3s;
+}
+
+// Login panel — line-art illustration
+.login-panel {
+  --login-stroke: #{map-get($brand-colors, "orange-400")};
+  --login-stroke-dim: rgba(255, 112, 41, 0.35);
+  --login-glow: rgba(255, 141, 66, 0.45);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 112, 41, 0.35) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(215, 72, 0, 0.25) 0%, transparent 55%),
+    #{map-get($brand-colors, "brown")};
+}
+
+.login-logo-ring {
+  fill: none;
+  stroke: var(--login-stroke);
+  stroke-width: 1.75;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: login-draw 0.4s ease forwards;
+}
+
+.login-illustration {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-illustration__glow {
+  position: absolute;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--login-glow) 0%, transparent 70%);
+  filter: blur(6px);
+  animation: login-glow-pulse 6s ease-in-out infinite;
+  animation-delay: 1.6s;
+}
+
+.login-illustration__svg {
+  position: relative;
+  animation: login-float 6s ease-in-out infinite;
+  animation-delay: 1.6s;
+}
+
+.login-illustration__svg path,
+.login-illustration__svg line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.login-illustration__front path {
+  stroke: var(--login-stroke);
+  stroke-width: 2.5;
+}
+
+.login-illustration__front .login-illustration__accent {
+  stroke: var(--login-stroke);
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+.login-illustration__back line {
+  stroke: var(--login-stroke-dim);
+  stroke-width: 2;
+}
+
+.login-illustration__connector {
+  stroke: var(--login-stroke-dim);
+  stroke-width: 1.5;
+}
+
+.login-illustration__draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: login-draw var(--draw-duration, 0.4s) ease forwards;
+  animation-delay: var(--draw-delay, 0s);
+}
+
+@keyframes login-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes login-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes login-glow-pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-logo-ring,
+  .login-illustration__draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .login-illustration__svg,
+  .login-illustration__glow {
+    animation: none;
+  }
 }

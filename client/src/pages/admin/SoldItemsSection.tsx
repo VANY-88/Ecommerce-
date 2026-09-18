@@ -1,28 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Table from "react-bootstrap/Table";
 import api from "../../services/api";
+import DashboardErrorState from "../../components/admin/DashboardErrorState";
 import { ApiResponse, SoldItem } from "../../types/api";
 
 function SoldItemsSection() {
   const [items, setItems] = useState<SoldItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchItems = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get<ApiResponse<SoldItem[]>>("/admin/dashboard/sold-items");
+      setItems(response.data.data || []);
+    } catch (error) {
+      console.error("Error loading sold items:", error);
+      setError("Couldn't load sold items. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const response = await api.get<ApiResponse<SoldItem[]>>("/admin/dashboard/sold-items");
-        setItems(response.data.data || []);
-      } catch (error) {
-        console.error("Error loading sold items:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchItems();
-  }, []);
+  }, [fetchItems]);
 
   if (loading) {
     return <p className="text-brown-1000">Loading sold items...</p>;
+  }
+
+  if (error) {
+    return <DashboardErrorState message={error} onRetry={fetchItems} />;
   }
 
   return (

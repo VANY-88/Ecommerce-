@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -13,6 +13,7 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import api from "../../services/api";
+import DashboardErrorState from "../../components/admin/DashboardErrorState";
 import { ApiResponse, MonthlyProfit } from "../../types/api";
 import { exportToExcel, exportToPdf } from "../../utils/exportReport";
 
@@ -28,20 +29,25 @@ function monthLabel(year: number, month: number) {
 function ProfitStatsSection() {
   const [data, setData] = useState<MonthlyProfit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get<ApiResponse<MonthlyProfit[]>>("/admin/dashboard/profit-by-month");
+      setData(response.data.data || []);
+    } catch (error) {
+      console.error("Error loading profit stats:", error);
+      setError("Couldn't load profit statistics. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await api.get<ApiResponse<MonthlyProfit[]>>("/admin/dashboard/profit-by-month");
-        setData(response.data.data || []);
-      } catch (error) {
-        console.error("Error loading profit stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const chartData = data.map((m) => ({
     month: monthLabel(m.year, m.month),
@@ -80,6 +86,10 @@ function ProfitStatsSection() {
 
   if (loading) {
     return <p className="text-brown-1000">Loading profit statistics...</p>;
+  }
+
+  if (error) {
+    return <DashboardErrorState message={error} onRetry={fetchData} />;
   }
 
   return (

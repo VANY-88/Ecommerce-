@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import Button from "./Button";
 import { SessionUser } from "../types/api";
+import { useHeaderTheme } from "../hooks/useHeaderTheme";
 
 interface HeaderProps {
   user: SessionUser | null;
@@ -25,6 +26,8 @@ const ShoppingIcon: React.FC<{ className?: string }> = ({ className }) => (
 const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const headerRef = useRef<HTMLElement | null>(null);
+  const theme = useHeaderTheme(headerRef, "app-content");
 
   const handlePersonIconClick = () => {
     if (user) {
@@ -64,14 +67,16 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
 
   return (
     <Navbar
+      ref={headerRef as React.Ref<HTMLElement>}
       expand="md"
       expanded={menuOpen}
       onToggle={setMenuOpen}
-      className="px-4 px-lg-5 py-3 navbar-brand-transition bg-transparent"
+      variant={theme === "dark" ? "dark" : "light"}
+      className={`px-4 px-lg-5 py-3 site-header site-header--${theme}`}
     >
       <Navbar.Brand href={homeHref} className="d-flex align-items-center flex-shrink-0">
         <img src="./assets/Cir.svg" alt="Logo" style={{ width: "2.25rem", height: "2.25rem" }} loading="lazy" decoding="async" />
-        <span className="ms-3 text-black font-dm-sans fs-4 fw-bolder">Furnitech</span>
+        <span className="ms-3 header-logo-text font-dm-sans fs-4 fw-bolder">Furnitech</span>
       </Navbar.Brand>
 
       <Navbar.Toggle aria-label="Toggle menu" />
@@ -82,7 +87,15 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           {user?.role !== "Admin" && (
             <Nav.Link onClick={handleProductsClick} className="nav-link-brand">Products</Nav.Link>
           )}
-          <Nav.Link onClick={handleBlogClick} className="nav-link-brand">Blogs</Nav.Link>
+          <Nav.Link onClick={handleBlogClick} className="nav-link-brand d-flex align-items-center gap-2">
+            Blogs
+            <span
+              className="bg-orange-500 text-white fw-bold rounded-pill px-2 py-1"
+              style={{ fontSize: "0.625rem", lineHeight: 1 }}
+            >
+              Soon
+            </span>
+          </Nav.Link>
           <Nav.Link onClick={handleAboutClick} className="nav-link-brand">About Us</Nav.Link>
           {user?.role === "Admin" && (
             <Nav.Link onClick={handleDashboardClick} className="nav-link-brand">Dashboard</Nav.Link>

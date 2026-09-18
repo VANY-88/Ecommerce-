@@ -20,7 +20,6 @@ function ShippingDetails() {
   const [address, setAddress] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,26 +27,24 @@ function ShippingDetails() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
+      if (!userId) {
+        return;
+      }
 
-      if (token && userId) {
-        try {
-          const response = await api.get<ApiResponse<User>>(`/users/${userId}`);
-          const userData = response.data.data;
+      try {
+        const response = await api.get<ApiResponse<User>>(`/users/${userId}`);
+        const userData = response.data.data;
 
-          if (userData) {
-            setFirstName(userData.firstName || "");
-            setLastName(userData.lastName || "");
-            setEmail(userData.email);
-            setPhone(userData.phone || "");
-            setAddress(userData.address || "");
-          }
-
-          setIsLoggedIn(true);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+        if (userData) {
+          setFirstName(userData.firstName || "");
+          setLastName(userData.lastName || "");
+          setEmail(userData.email);
+          setPhone(userData.phone || "");
+          setAddress(userData.address || "");
         }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     };
 
@@ -73,10 +70,6 @@ function ShippingDetails() {
     });
   };
 
-  const handleLoginRedirect = () => {
-    navigate("/login");
-  };
-
   return (
     <div
       className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-brown-500 px-3 px-md-4 px-lg-5"
@@ -91,23 +84,11 @@ function ShippingDetails() {
       >
         <form onSubmit={handleShippingInfo} className="d-flex flex-column gap-5">
           <h2 className="fs-display-3 text-heading-black fw-bold text-start mb-0">
-            {isLoggedIn ? (
-              <>
-                Please confirm your{" "}
-                <span className="d-block">
-                  <span className="text-orange-500">Shipping</span>{" "}
-                  <span className="text-heading-black">Information.</span>
-                </span>
-              </>
-            ) : (
-              <>
-                Enter your{" "}
-                <span className="d-block">
-                  <span className="text-orange-500">Shipping</span>{" "}
-                  <span className="text-heading-black">Information.</span>
-                </span>
-              </>
-            )}
+            Please confirm your{" "}
+            <span className="d-block">
+              <span className="text-orange-500">Shipping</span>{" "}
+              <span className="text-heading-black">Information.</span>
+            </span>
           </h2>
 
           <div className="d-flex flex-column gap-3">
@@ -186,20 +167,6 @@ function ShippingDetails() {
             disabled={!isValid}
           />
 
-          <p className="text-center mb-0">
-            {!isLoggedIn && (
-              <>
-                Already have an account?{" "}
-                <button
-                  onClick={handleLoginRedirect}
-                  className="text-orange-500 text-decoration-underline border-0 bg-transparent p-0"
-                  type="button"
-                >
-                  Login now
-                </button>
-              </>
-            )}
-          </p>
         </form>
       </div>
     </div>

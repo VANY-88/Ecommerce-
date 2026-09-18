@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import api from "../services/api";
+import { saveSession } from "../services/session";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
 import PasswordInput from "../components/PasswordInput";
@@ -35,19 +36,14 @@ function Register({ onLogin }: RegisterProps) {
         lastName,
         password,
       });
-      const { data, token } = response.data;
+      const { data, token, refreshToken } = response.data;
 
-      if (!data || !token) return;
+      if (!data || !token || !refreshToken) return;
 
       const name = `${data.firstName || ""} ${data.lastName || ""}`.trim();
       const role = data.roles?.[0];
 
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("token", token);
-      localStorage.setItem("userName", name);
-      if (role) {
-        localStorage.setItem("userRole", role);
-      }
+      saveSession({ id: data.id, name, role, token, refreshToken });
 
       onLogin({ _id: data.id, name, token, role });
       navigate("/");

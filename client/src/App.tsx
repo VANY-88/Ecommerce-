@@ -6,6 +6,8 @@ import PrivateRoute from "./components/PrivateRoute";
 import AdminRoute from "./components/AdminRoute";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import api from "./services/api";
+import { getRefreshToken, clearSession } from "./services/session";
 import { SessionUser } from "./types/api";
 
 const LandingPage = lazy(() => import("./pages/LandingPage"));
@@ -39,23 +41,22 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = (loggedInUser: SessionUser & { token: string }) => {
-    console.log("User logged in:", loggedInUser.name);
-    localStorage.setItem("userId", loggedInUser._id);
-    localStorage.setItem("token", loggedInUser.token);
-    localStorage.setItem("userName", loggedInUser.name);
-    if (loggedInUser.role) {
-      localStorage.setItem("userRole", loggedInUser.role);
-    }
+    // Login.tsx/Register.tsx already persist the session via saveSession()
+    // before calling this — this just updates in-memory app state.
     setUser(loggedInUser);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("userId");
-    localStorage.removeItem("token");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userRole");
+  const handleLogout = async () => {
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      try {
+        await api.post("/users/logout", { refreshToken });
+      } catch {
+        // Best-effort revocation — clear local session regardless.
+      }
+    }
+    clearSession();
     setUser(null);
-    console.log("User logged out");
   };
 
   return (
@@ -63,29 +64,33 @@ const App: React.FC = () => {
       <ToastContainer />
       <AccessibleNavigationAnnouncer />
       <Header user={user} onLogout={handleLogout} />
-      <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
-          <Route path="/signup" element={<Register onLogin={handleLogin} />} />
-          <Route path="/forgot-password" element={<ForgetPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/edit-profile" element={<PrivateRoute component={EditProfile} />} />
-          <Route path="/landing" element={<LandingPage />} />
-          <Route path="/products" element={<ProductPage />} />
-          <Route path="/products/:productId" element={<SingleProductPage />} />
-          <Route path="/profile" element={<PrivateRoute component={UserProfile} />} />
-          <Route path="/" element={<Navigate to="/landing" />} />
-          <Route path="*" element={<Navigate to="/landing" />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/shipping" element={<ShippingDetails />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/payment/result" element={<PaymentResult />} />
-          <Route path="/checkout/:orderId" element={<Checkout />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/admin/dashboard" element={<AdminRoute component={AdminDashboard} />} />
-        </Routes>
-      </Suspense>
+      {/* Stable, page-content-only subtree that useHeaderTheme's
+          MutationObserver watches for data-header-theme sections. */}
+      <div id="app-content">
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/signup" element={<Register onLogin={handleLogin} />} />
+            <Route path="/forgot-password" element={<ForgetPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/edit-profile" element={<PrivateRoute component={EditProfile} />} />
+            <Route path="/landing" element={<LandingPage />} />
+            <Route path="/products" element={<ProductPage />} />
+            <Route path="/products/:productId" element={<SingleProductPage />} />
+            <Route path="/profile" element={<PrivateRoute component={UserProfile} />} />
+            <Route path="/" element={<Navigate to="/landing" />} />
+            <Route path="*" element={<Navigate to="/landing" />} />
+            <Route path="/cart" element={<PrivateRoute component={Cart} />} />
+            <Route path="/shipping" element={<PrivateRoute component={ShippingDetails} />} />
+            <Route path="/payment" element={<PrivateRoute component={Payment} />} />
+            <Route path="/payment/result" element={<PaymentResult />} />
+            <Route path="/checkout/:orderId" element={<PrivateRoute component={Checkout} />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/admin/dashboard" element={<AdminRoute component={AdminDashboard} />} />
+          </Routes>
+        </Suspense>
+      </div>
       <Footer />
     </Router>
   );

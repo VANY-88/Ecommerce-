@@ -2,15 +2,17 @@ import React from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import { useReveal } from "../components/Reveal";
 
 const teamMembers = [
   {
     id: 2,
     name: "Nguyen Van Huy",
+    nickname: "VANY",
     role: "Fullstack Developer",
     description:
-      "Huy builds the platform end-to-end — from the ASP.NET Core API and database design to the pixel-perfect, responsive React interface on top of it.",
-    imageUrl: "./assets/huy-avatar.webp",
+      "Huy (VANY) builds the platform end-to-end — from the ASP.NET Core API and database design to the pixel-perfect, responsive React interface on top of it.",
+    imageUrl: "./assets/huy-avatar.png",
     skills: ["React", "TypeScript", "ASP.NET Core", "C#", "SQL Server", "Bootstrap"],
   },
 ];
@@ -45,19 +47,17 @@ const values = [
   },
 ];
 
-const stats = [
-  { value: "500+", label: "Products" },
-  { value: "10K+", label: "Customers" },
-  { value: "1", label: "Founders" },
-  { value: "99%", label: "Satisfaction" },
-];
-
 function About() {
+  const missionReveal = useReveal<HTMLDivElement>();
+  const teamReveal = useReveal<HTMLElement>();
+  const ctaReveal = useReveal<HTMLElement>();
+
   return (
     <div className="min-vh-100 bg-brown-500 font-dm-sans">
 
       {/* Hero */}
       <section
+        data-header-theme="dark"
         className="position-relative overflow-hidden bg-brown text-center px-4"
         style={{ paddingBottom: "7rem" }}
       >
@@ -91,30 +91,12 @@ function About() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="bg-white border-top border-bottom border-brown-600">
-        <Container className="py-5" style={{ maxWidth: "896px" }}>
-          <Row className="text-center g-0">
-            {stats.map((stat, index) => (
-              <Col
-                key={stat.label}
-                xs={6}
-                md={3}
-                className="py-4"
-                style={{
-                  borderLeft: index !== 0 ? "1px solid #e3ded2" : undefined,
-                }}
-              >
-                <p className="fs-display-3 fw-bold text-orange-500 mb-0">{stat.value}</p>
-                <p className="text-brown-1000 mt-1 mb-0">{stat.label}</p>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-      </section>
-
       {/* Mission */}
-      <Container className="px-4 py-5" style={{ maxWidth: "1024px", paddingTop: "6rem", paddingBottom: "6rem" }}>
+      <Container
+        ref={missionReveal.ref}
+        className={`px-4 py-5 ${missionReveal.className}`}
+        style={{ maxWidth: "1024px", paddingTop: "6rem", paddingBottom: "6rem" }}
+      >
         <Row className="align-items-center g-5">
           <Col md={6} className="d-flex flex-column gap-3">
             <h2 className="fs-display-3 fw-bold text-heading-black">
@@ -155,7 +137,11 @@ function About() {
       </Container>
 
       {/* Team */}
-      <section className="bg-white px-4" style={{ paddingTop: "6rem", paddingBottom: "6rem" }}>
+      <section
+        ref={teamReveal.ref}
+        className={`bg-white px-4 ${teamReveal.className}`}
+        style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      >
         <Container style={{ maxWidth: "896px" }}>
           <div className="d-flex flex-column gap-3 text-center mb-5">
             <h2 className="fs-display-3 fw-bold text-heading-black">
@@ -193,8 +179,14 @@ function About() {
                     }}
                   />
                 </div>
-                <h3 className="fs-display-4 fw-bold text-heading-black">{member.name}</h3>
-                <p className="text-orange-500 fw-medium small mt-1">{member.role}</p>
+                <h3 className="fs-display-4 fw-bold text-heading-black mb-0">{member.name}</h3>
+                <p
+                  className="text-brown-1000 fw-semibold text-uppercase mb-0 mt-1"
+                  style={{ fontSize: "1.125rem", letterSpacing: "0.15em", opacity: 0.7 }}
+                >
+                  {member.nickname}
+                </p>
+                <p className="text-orange-500 fw-medium small mt-2">{member.role}</p>
                 <p className="text-brown-1000 small mt-3">{member.description}</p>
                 <div className="d-flex flex-wrap justify-content-center gap-2 mt-3">
                   {member.skills.map((skill) => (
@@ -214,7 +206,11 @@ function About() {
       </section>
 
       {/* CTA */}
-      <section className="px-4 text-center d-flex flex-column gap-4" style={{ paddingTop: "6rem", paddingBottom: "6rem" }}>
+      <section
+        ref={ctaReveal.ref}
+        className={`px-4 text-center d-flex flex-column gap-4 ${ctaReveal.className}`}
+        style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      >
         <h2 className="fs-display-3 fw-bold text-heading-black mb-0">
           Ready to explore?
         </h2>

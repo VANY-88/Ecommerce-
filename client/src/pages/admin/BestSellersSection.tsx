@@ -1,27 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import api from "../../services/api";
+import DashboardErrorState from "../../components/admin/DashboardErrorState";
 import { ApiResponse, BestSeller } from "../../types/api";
 import { exportToExcel, exportToPdf } from "../../utils/exportReport";
 
 function BestSellersSection() {
   const [data, setData] = useState<BestSeller[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get<ApiResponse<BestSeller[]>>("/admin/dashboard/best-sellers");
+      setData(response.data.data || []);
+    } catch (error) {
+      console.error("Error loading best sellers:", error);
+      setError("Couldn't load best sellers. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await api.get<ApiResponse<BestSeller[]>>("/admin/dashboard/best-sellers");
-        setData(response.data.data || []);
-      } catch (error) {
-        console.error("Error loading best sellers:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleExportExcel = () => {
     exportToExcel(
@@ -46,6 +52,10 @@ function BestSellersSection() {
 
   if (loading) {
     return <p className="text-brown-1000">Loading best sellers...</p>;
+  }
+
+  if (error) {
+    return <DashboardErrorState message={error} onRetry={fetchData} />;
   }
 
   return (

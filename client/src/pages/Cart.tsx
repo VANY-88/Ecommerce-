@@ -36,10 +36,6 @@ function Cart() {
       setError(null);
       try {
         const userId = localStorage.getItem("userId");
-        if (!userId) {
-          navigate("/login");
-          return;
-        }
 
         const response = await api.get<ApiResponse<CartType>>(`/carts/${userId}`);
         if (response.data.success && response.data.data) {

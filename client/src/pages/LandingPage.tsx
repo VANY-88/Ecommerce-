@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import api from "../services/api";
+import { useReveal } from "../components/Reveal";
 import { ApiResponse, Product } from "../types/api";
 
 function LandingPage() {
@@ -12,6 +13,10 @@ function LandingPage() {
   const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set());
   const [products, setProducts] = useState<Product[]>([]);
   const navigate = useNavigate();
+  const categoriesReveal = useReveal<HTMLDivElement>();
+  const recommendedReveal = useReveal<HTMLDivElement>();
+  const confidenceReveal = useReveal<HTMLDivElement>();
+  const faqReveal = useReveal<HTMLDivElement>();
 
   const toggleFaq = (index: number) => {
     setOpenFaqs((prev) => {
@@ -61,9 +66,10 @@ function LandingPage() {
         <section
           className="position-relative w-100 d-flex align-items-center"
           style={{
-            backgroundImage: `url('./assets/Container.webp')`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
+            background:
+              "radial-gradient(circle at 15% 20%, rgba(255,112,41,0.18) 0%, transparent 45%)," +
+              "radial-gradient(circle at 85% 80%, rgba(215,72,0,0.14) 0%, transparent 50%)," +
+              "linear-gradient(135deg, #faf7f1 0%, #f2efe6 50%, #e3ded2 100%)",
             height: "100vh",
           }}
         >
@@ -101,10 +107,10 @@ function LandingPage() {
               </div>
             </div>
 
-            <a
+            <Link
               className="d-flex justify-content-center align-items-center gap-2 bg-brown text-decoration-none"
               style={{ width: "195px", padding: "1.25rem 2.25rem", borderRadius: "40px" }}
-              href="/"
+              to="/products"
             >
               <h1 className="font-dm-sans text-white text-center fw-bold mb-0" style={{ fontSize: "18px", lineHeight: "18px" }}>
                 Explore
@@ -116,39 +122,16 @@ function LandingPage() {
                 loading="lazy"
                 decoding="async"
               />
-            </a>
-          </section>
-
-          {/* Product Details overlay - bottom right */}
-          <section className="d-none d-sm-inline-flex flex-column align-items-end gap-2 position-absolute" style={{ bottom: "2.5rem", right: "2rem" }}>
-            <h1 className="text-black text-end fw-semibold font-dm-sans mb-0" style={{ fontSize: "22px", lineHeight: 1.1 }}>
-              H&D Flower Lamp
-            </h1>
-            <div className="d-flex align-items-center gap-4">
-              <div
-                className="d-flex justify-content-center align-items-center"
-                style={{
-                  paddingRight: "6px",
-                  paddingLeft: "12px",
-                  paddingTop: "10px",
-                  paddingBottom: "10px",
-                  borderRadius: "100px",
-                  backgroundColor: "rgba(255,255,255,0.25)",
-                }}
-              >
-                <h2 className="font-dm-sans text-orange-400 fw-bolder mb-0" style={{ fontSize: "14px", lineHeight: 1.1 }}>
-                  -20%
-                </h2>
-              </div>
-              <h1 className="text-black text-end font-dm-sans fw-bolder mb-0" style={{ fontSize: "1.875rem", lineHeight: 1.2 }}>
-                199.99$
-              </h1>
-            </div>
+            </Link>
           </section>
         </section>
 
         {/* Why Choosing Us */}
-        <section className="d-flex w-100 justify-content-center bg-brown px-4 py-5" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
+        <section
+          data-header-theme="dark"
+          className="d-flex w-100 justify-content-center bg-brown px-4 py-5"
+          style={{ paddingTop: "80px", paddingBottom: "80px" }}
+        >
           <div className="d-flex w-100 flex-column flex-md-row align-items-start gap-5" style={{ maxWidth: "1220px" }}>
             <h1 className="flex-shrink-0 text-white font-dm-sans fw-bold mb-0" style={{ fontSize: "40px", lineHeight: 1.25 }}>
               <span className="d-block">Why</span>
@@ -194,7 +177,8 @@ function LandingPage() {
         <section className="d-flex flex-column justify-content-center align-items-center">
           {/* Categories By Spaces */}
           <Container
-            className="d-flex flex-column align-items-center gap-5 px-4"
+            ref={categoriesReveal.ref}
+            className={`d-flex flex-column align-items-center gap-5 px-4 ${categoriesReveal.className}`}
             style={{ maxWidth: "1220px", paddingTop: "80px" }}
           >
             {/* Header */}
@@ -250,7 +234,11 @@ function LandingPage() {
           </Container>
 
           {/* Recommended */}
-          <Container className="d-flex flex-column gap-5 px-4" style={{ maxWidth: "1220px", paddingTop: "80px", paddingBottom: "80px" }}>
+          <Container
+            ref={recommendedReveal.ref}
+            className={`d-flex flex-column gap-5 px-4 ${recommendedReveal.className}`}
+            style={{ maxWidth: "1220px", paddingTop: "80px", paddingBottom: "80px" }}
+          >
             <div className="d-flex flex-column gap-3" style={{ maxWidth: "600px" }}>
               <h2 className="fw-bold text-heading-black mb-0" style={{ fontSize: "clamp(2.25rem, 5vw, 56px)", lineHeight: 1.2 }}>
                 Recommended{" "}
@@ -328,7 +316,7 @@ function LandingPage() {
                             {[...Array(5)].map((_, i) => (
                               <img
                                 key={`${product.id}-star-${i}`}
-                                src="./assets/star.svg"
+                                src="./assets/Star.svg"
                                 alt="star"
                                 style={{ width: "1rem", height: "1rem" }}
                                 loading="lazy"
@@ -376,14 +364,37 @@ function LandingPage() {
             </div>
 
             {/* CTA */}
-            <a href="/" aria-label="More Information">
-              <img src="./assets/CTA.webp" alt="Browse all products" className="w-100" loading="lazy" decoding="async" />
-            </a>
+            <Link
+              to="/products"
+              aria-label="Browse all products"
+              className="d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 w-100 text-decoration-none px-4 px-md-5 py-5 rounded-4"
+              style={{
+                background:
+                  "radial-gradient(circle at 85% 20%, rgba(255,112,41,0.35) 0%, transparent 55%), #220e03",
+              }}
+            >
+              <div className="text-center text-md-start">
+                <h2 className="text-white fw-bold font-dm-sans mb-2" style={{ fontSize: "clamp(1.5rem, 3vw, 2.25rem)" }}>
+                  Ready to furnish your space?
+                </h2>
+                <p className="text-brown-700 font-dm-sans mb-0" style={{ fontSize: "1.125rem" }}>
+                  Browse our full collection and find pieces that fit your style.
+                </p>
+              </div>
+              <span
+                className="d-flex justify-content-center align-items-center gap-2 bg-orange-500 text-white fw-bold font-dm-sans flex-shrink-0"
+                style={{ padding: "1rem 2rem", borderRadius: "40px", fontSize: "18px" }}
+              >
+                Browse all products
+                <img style={{ width: "18px", height: "18px" }} src="./assets/Arrow Right.png" alt="" loading="lazy" decoding="async" />
+              </span>
+            </Link>
           </Container>
 
           {/* Shop with Confidence */}
           <Container
-            className="d-flex flex-column justify-content-center align-items-center px-4"
+            ref={confidenceReveal.ref}
+            className={`d-flex flex-column justify-content-center align-items-center px-4 ${confidenceReveal.className}`}
             style={{ maxWidth: "1220px", paddingTop: "80px", paddingBottom: "80px", gap: "60px" }}
           >
             <div className="d-flex flex-column align-items-center gap-3 text-center">
@@ -425,7 +436,8 @@ function LandingPage() {
 
           {/* FAQ */}
           <Container
-            className="d-flex flex-column align-items-center gap-5 px-4"
+            ref={faqReveal.ref}
+            className={`d-flex flex-column align-items-center gap-5 px-4 ${faqReveal.className}`}
             style={{ maxWidth: "1010px", paddingTop: "80px", paddingBottom: "80px" }}
           >
             <div className="w-100 d-flex flex-column align-items-start gap-3" style={{ maxWidth: "716px" }}>
@@ -433,17 +445,17 @@ function LandingPage() {
                 Frequently Asked Questions
               </h1>
               <h2 className="w-100 text-neutral-text-gray text-center font-dm-sans fw-normal mb-0" style={{ fontSize: "clamp(18px, 2vw, 20px)", lineHeight: "30px" }}>
-                Lorem ipsum dolor sit amet consectetur adipiscing elit aenean id
-                volutpat imperdiet quis at pellentesque nunc commodo nunc purus
-                pulvinar nisi fusce.
+                Answers to the questions we hear most about ordering, shipping,
+                and returns.
               </h2>
             </div>
 
             <div className="d-flex flex-column align-items-start gap-4 w-100">
               {[
-                { q: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?", a: "Lorem ipsum dolor sit amet, consectetur adipiscing elit id venenatis pretium risus euismod dictum egestas orci netus feugiat ut egestas ut sagittis tincidunt phasellus elit etiam cursus orci in. Id sed montes." },
-                { q: "Lorem ipsum dolor sit amet, sed do eiusmod?", a: "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." },
-                { q: "Lorem ipsum dolor sit amet, ut enim ad minim?", a: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident." },
+                { q: "How long does shipping take?", a: "Most orders are processed within 1-2 business days and arrive within 5-7 business days, depending on your location. You'll receive a confirmation email once your order ships." },
+                { q: "What payment methods do you accept?", a: "We accept Cash on Delivery, VNPay, and Momo. You can choose your preferred payment method at checkout." },
+                { q: "Can I return or exchange an item?", a: "Yes — if a piece doesn't work out, you can request a return or exchange within 30 days of delivery. Contact our support team to get started." },
+                { q: "How do I track my order?", a: "Once you're logged in, you can view your order status and history anytime from your account's order history page." },
               ].map((item, index) => (
                 <div
                   key={index}

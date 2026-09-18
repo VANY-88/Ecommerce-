@@ -9,6 +9,7 @@ export interface ApiResponse<T> {
   data?: T;
   msg?: string;
   token?: string;
+  refreshToken?: string;
 }
 
 export interface User {

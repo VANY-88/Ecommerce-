@@ -1,8 +1,11 @@
 using System.Text;
+using System.Text.Json;
+using System.Threading.RateLimiting;
 using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -82,6 +85,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequiredLength = 8;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 });
 
 builder.Services.AddOptions<JwtOptions>()
@@ -162,6 +167,27 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 });
 builder.Services.AddSingleton<IImageStorageService, R2ImageStorageService>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, ct) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+        var body = ApiResponse<object>.Fail("Too many requests. Please try again later.");
+        await context.HttpContext.Response.WriteAsync(
+            JsonSerializer.Serialize(body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }), ct);
+    };
+
+    options.AddPolicy("auth", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+        }));
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -179,8 +205,11 @@ app.UseHttpsRedirection();
 app.UseResponseCompression();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseCors();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

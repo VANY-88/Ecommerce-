@@ -43,6 +43,9 @@ function toDateInputValue(value?: string | null) {
   return value ? value.slice(0, 10) : "";
 }
 
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString();
 }
@@ -89,7 +92,7 @@ function InventorySection() {
       name: product.name,
       description: product.description,
       price: String(product.price),
-      costPrice: String(product.costPrice),
+      costPrice: String(product.costPrice ?? 0),
       discountPercent: product.discountPercent ? String(product.discountPercent) : "",
       discountStartDate: toDateInputValue(product.discountStartDate),
       discountEndDate: toDateInputValue(product.discountEndDate),
@@ -105,6 +108,17 @@ function InventorySection() {
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error("Only JPEG, PNG, WEBP, or GIF images are allowed.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error("Image must be 5MB or smaller.");
+      e.target.value = "";
+      return;
+    }
 
     setUploading(true);
     try {
@@ -207,7 +221,7 @@ function InventorySection() {
                 <td className="px-4 py-3 fw-medium text-heading-black">{p.name}</td>
                 <td className="px-4 py-3">{p.categoryName}</td>
                 <td className="px-4 py-3">${p.price.toFixed(2)}</td>
-                <td className="px-4 py-3">${p.costPrice.toFixed(2)}</td>
+                <td className="px-4 py-3">${(p.costPrice ?? 0).toFixed(2)}</td>
                 <td className="px-4 py-3">
                   {p.discountPercent > 0 && p.discountStartDate && p.discountEndDate ? (
                     <span className={p.isDiscountActive ? "text-orange-500 fw-semibold" : "text-brown-1000"}>

@@ -12,12 +12,14 @@ namespace WebShop.Api.Services;
 public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly TokenService _tokenService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
 
-    public UserService(UserManager<ApplicationUser> userManager, TokenService tokenService, IRefreshTokenRepository refreshTokenRepository)
+    public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, TokenService tokenService, IRefreshTokenRepository refreshTokenRepository)
     {
         _userManager = userManager;
+        _signInManager = signInManager;
         _tokenService = tokenService;
         _refreshTokenRepository = refreshTokenRepository;
     }
@@ -62,8 +64,12 @@ public class UserService : IUserService
             throw ApiException.BadRequest("User not found!");
         }
 
-        var passwordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
-        if (!passwordValid)
+        var signInResult = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: true);
+        if (signInResult.IsLockedOut)
+        {
+            throw ApiException.BadRequest("Account locked due to too many failed attempts. Try again later.");
+        }
+        if (!signInResult.Succeeded)
         {
             throw ApiException.BadRequest("Password incorrect!");
         }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace WebShop.Api.DTOs.Products;
 
@@ -7,7 +8,9 @@ public class ProductDto
     public int Id { get; set; }
     public string Name { get; set; } = null!;
     public decimal Price { get; set; }
-    public decimal CostPrice { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? CostPrice { get; set; }
     public decimal DiscountPercent { get; set; }
     public DateTime? DiscountStartDate { get; set; }
     public DateTime? DiscountEndDate { get; set; }

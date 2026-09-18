@@ -33,7 +33,7 @@ export interface Product {
   id: number;
   name: string;
   price: number;
-  costPrice: number;
+  costPrice?: number;
   discountPercent: number;
   discountStartDate?: string | null;
   discountEndDate?: string | null;

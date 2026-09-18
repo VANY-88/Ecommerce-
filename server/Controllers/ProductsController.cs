@@ -26,28 +26,28 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetProducts()
     {
-        var products = await _service.GetAllAsync();
+        var products = await _service.GetAllAsync(User.IsInRole("Admin"));
         return Ok(ApiResponse<object>.Ok(products));
     }
 
     [HttpGet("featured")]
     public async Task<IActionResult> GetFeaturedProducts()
     {
-        var products = await _service.GetFeaturedAsync();
+        var products = await _service.GetFeaturedAsync(User.IsInRole("Admin"));
         return Ok(ApiResponse<object>.Ok(products));
     }
 
     [HttpGet("category/{categoryId}")]
     public async Task<IActionResult> GetCategoryProducts(int categoryId)
     {
-        var products = await _service.GetByCategoryAsync(categoryId);
+        var products = await _service.GetByCategoryAsync(categoryId, User.IsInRole("Admin"));
         return Ok(ApiResponse<object>.Ok(products));
     }
 
     [HttpGet("{productId}")]
     public async Task<IActionResult> GetProduct(int productId)
     {
-        var product = await _service.GetByIdAsync(productId);
+        var product = await _service.GetByIdAsync(productId, User.IsInRole("Admin"));
         return Ok(ApiResponse<object>.Ok(product));
     }
 
@@ -68,6 +68,14 @@ public class ProductsController : ControllerBase
         if (file.Length > MaxImageSizeBytes)
         {
             throw ApiException.BadRequest("Image must be 5MB or smaller.");
+        }
+
+        await using (var headerStream = file.OpenReadStream())
+        {
+            if (!await FileSignatureValidator.IsAllowedImageAsync(headerStream))
+            {
+                throw ApiException.BadRequest("File content does not match an allowed image type.");
+            }
         }
 
         var url = await _imageStorage.UploadAsync(file, ct);

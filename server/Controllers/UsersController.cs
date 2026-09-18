@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebShop.Api.Common;
 using WebShop.Api.DTOs.Auth;
 using WebShop.Api.DTOs.Users;
@@ -19,6 +20,7 @@ public class UsersController : ControllerBase
         _service = service;
     }
 
+    [EnableRateLimiting("auth")]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
@@ -26,6 +28,7 @@ public class UsersController : ControllerBase
         return Ok(ApiResponse<object>.WithTokens(user, token, refreshToken, "User registered successfully!"));
     }
 
+    [EnableRateLimiting("auth")]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {

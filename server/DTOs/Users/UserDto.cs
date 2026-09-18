@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace WebShop.Api.DTOs.Users;
 
 public class UserDto
@@ -13,8 +15,15 @@ public class UserDto
 
 public class UpdateUserDto
 {
+    [StringLength(50, MinimumLength = 1)]
     public string? FirstName { get; set; }
+
+    [StringLength(50, MinimumLength = 1)]
     public string? LastName { get; set; }
+
+    [Phone, StringLength(20)]
     public string? Phone { get; set; }
+
+    [StringLength(300)]
     public string? Address { get; set; }
 }

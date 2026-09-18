@@ -15,10 +15,19 @@ public class PriceInfoDto
 
 public class OrderCustomerDto
 {
+    [Required, StringLength(50, MinimumLength = 1)]
     public string FirstName { get; set; } = null!;
+
+    [Required, StringLength(50, MinimumLength = 1)]
     public string LastName { get; set; } = null!;
+
+    [Required, EmailAddress, StringLength(256)]
     public string Email { get; set; } = null!;
+
+    [Required, Phone, StringLength(20)]
     public string Phone { get; set; } = null!;
+
+    [Required, StringLength(300, MinimumLength = 1)]
     public string Address { get; set; } = null!;
 }
 
@@ -41,8 +50,12 @@ public class OrderDto
 
 public class CreateOrderDto
 {
+    [Range(1, int.MaxValue, ErrorMessage = "CartId must be a positive integer.")]
     public int CartId { get; set; }
+
+    [Required]
     public string UserId { get; set; } = null!;
+
     public decimal Price { get; set; }
     public PriceInfoDto PriceInfo { get; set; } = null!;
     public OrderCustomerDto? Customer { get; set; }

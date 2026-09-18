@@ -15,32 +15,32 @@ public class ProductService : IProductService
         _repository = repository;
     }
 
-    public async Task<List<ProductDto>> GetAllAsync()
+    public async Task<List<ProductDto>> GetAllAsync(bool includeCostPrice)
     {
         var products = await _repository.GetAllWithCategoryAsync();
-        return products.Select(ToDto).ToList();
+        return products.Select(p => ToDto(p, includeCostPrice)).ToList();
     }
 
-    public async Task<ProductDto> GetByIdAsync(int id)
+    public async Task<ProductDto> GetByIdAsync(int id, bool includeCostPrice)
     {
         var product = await _repository.GetByIdWithCategoryAsync(id);
         if (product == null)
         {
             throw ApiException.BadRequest("Product not found!");
         }
-        return ToDto(product);
+        return ToDto(product, includeCostPrice);
     }
 
-    public async Task<List<ProductDto>> GetFeaturedAsync()
+    public async Task<List<ProductDto>> GetFeaturedAsync(bool includeCostPrice)
     {
         var products = await _repository.GetFeaturedAsync();
-        return products.Select(ToDto).ToList();
+        return products.Select(p => ToDto(p, includeCostPrice)).ToList();
     }
 
-    public async Task<List<ProductDto>> GetByCategoryAsync(int categoryId)
+    public async Task<List<ProductDto>> GetByCategoryAsync(int categoryId, bool includeCostPrice)
     {
         var products = await _repository.GetByCategoryAsync(categoryId);
-        return products.Select(ToDto).ToList();
+        return products.Select(p => ToDto(p, includeCostPrice)).ToList();
     }
 
     public async Task<ProductDto> CreateAsync(ProductUpsertDto dto)
@@ -106,12 +106,12 @@ public class ProductService : IProductService
         await _repository.SaveChangesAsync();
     }
 
-    private static ProductDto ToDto(Product product) => new()
+    private static ProductDto ToDto(Product product, bool includeCostPrice = true) => new()
     {
         Id = product.Id,
         Name = product.Name,
         Price = product.Price,
-        CostPrice = product.CostPrice,
+        CostPrice = includeCostPrice ? product.CostPrice : null,
         DiscountPercent = product.DiscountPercent,
         DiscountStartDate = product.DiscountStartDate,
         DiscountEndDate = product.DiscountEndDate,

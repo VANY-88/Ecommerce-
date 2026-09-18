@@ -24,7 +24,6 @@ server/obj/
 # Build output
 client/build/
 dist/
-public/
 
 # Logs
 logs/

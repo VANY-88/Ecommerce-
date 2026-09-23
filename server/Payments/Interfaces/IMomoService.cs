@@ -2,7 +2,10 @@ namespace WebShop.Api.Payments.Interfaces;
 
 public interface IMomoService
 {
-    Task<string> CreatePaymentUrlAsync(int orderId, decimal amount, string orderInfo);
+    Task<GatewayPaymentUrl> CreatePaymentUrlAsync(GatewayPaymentRequest request);
 
-    bool ValidateSignature(IReadOnlyDictionary<string, string> query, out string? ourOrderId, out string resultCode, out long amount, out string? transId);
+    // Returns null when the signature is invalid.
+    GatewayResult? ParseCallback(IReadOnlyDictionary<string, string> fields);
+
+    Task<GatewayResult> QueryAsync(string txnRef);
 }

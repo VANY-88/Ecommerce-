@@ -31,6 +31,18 @@ A full-stack e-commerce storefront for furniture, with a customer shopping exper
 
 Also includes `/about` and `/blog` pages, plus a forgot/reset-password flow.
 
+### Payments
+- **Methods:** Cash on Delivery, VNPay or Momo. Store prices are in USD; gateway payments are charged in VND at `Payments:VndPerUnit` (default 25,000), converted once per payment attempt.
+- **Resuming an unpaid order:** it stays open at `/payment/:orderId`. The user reaches it by going Back from the gateway, from the result page, or from "Continue Payment" on the order or profile page. From there they can retry or switch method, and re-submitting the same cart resumes the existing order instead of creating a new one.
+- **Double-payment protection:**
+  - Every gateway hand-off is a separate payment attempt with its own reference.
+  - Callbacks (return URL, VNPay IPN, Momo IPN) are applied idempotently.
+  - Before starting a new attempt or switching method, the server asks the gateway about the previous attempt (VNPay `querydr` / Momo query).
+    - Paying again with the same method reuses the open payment link until it expires.
+    - Switching to another method is refused while the old link could still be paid: `Payments:AttemptLifetimeMinutes` (default 10) plus `Payments:ExpiryGraceSeconds` (default 120). After that, the user must confirm before the unconfirmed attempt is abandoned.
+  - If a second payment still lands on an already-paid order, it is flagged `RefundRequired` in `PaymentAttempts` and logged.
+- **VNPay IPN URL:** register `/api/payments/vnpay/ipn` in the VNPay merchant portal. Locally, the return URL applies the result instead.
+
 ### Admin flow
 Admins log in with an Admin-role account and access the role-gated dashboard at `/admin/dashboard`, with four sections:
 - **Inventory** — create/edit/delete products, including image upload and an optional discount percentage with a start/end date range
@@ -58,6 +70,10 @@ cp appsettings.Development.json.example appsettings.Development.json
 Edit `appsettings.Development.json` and set:
 - `ConnectionStrings:DefaultConnection` to your PostgreSQL connection string
 - `Jwt:Secret` to a real random secret (at least 32 bytes)
+
+To test VNPay or Momo locally, also replace the `VnPay` / `Momo` placeholders in that file with sandbox credentials:
+- **VNPay**: register at https://sandbox.vnpayment.vn/devreg/. The shared demo pair in `appsettings.json` is rejected by the sandbox (error 70).
+- **Momo**: register at https://developers.momo.vn, or use the public test pair from `appsettings.json`.
 
 Then run:
 ```bash

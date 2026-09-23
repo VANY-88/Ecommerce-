@@ -19,10 +19,13 @@ public class CartService : ICartService
 
     public async Task<CartDto> GetOrCreatePendingAsync(string userId)
     {
-        var carts = await _cartRepository.GetAllByUserWithItemsAsync(userId);
-        var pending = carts.FirstOrDefault(c => c.Status == "Pending");
+        var pending = await _cartRepository.GetPendingByUserWithItemsAsync(userId);
         if (pending != null)
         {
+            if (Reprice(pending))
+            {
+                await _cartRepository.SaveChangesAsync();
+            }
             return ToDto(pending);
         }
 
@@ -54,12 +57,12 @@ public class CartService : ICartService
             var newCart = new Cart
             {
                 UserId = userId,
-                TotalPrice = product.Price,
+                TotalPrice = product.EffectivePriceAt(DateTime.UtcNow),
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow,
                 Items = new List<CartItem>
                 {
-                    new() { ProductId = productId, Quantity = 1, Price = product.Price },
+                    new() { ProductId = productId, Quantity = 1, Price = product.EffectivePriceAt(DateTime.UtcNow) },
                 },
             };
 
@@ -72,14 +75,13 @@ public class CartService : ICartService
         if (existingItem != null)
         {
             existingItem.Quantity += 1;
-            existingItem.Price += product.Price;
         }
         else
         {
-            cart.Items.Add(new CartItem { ProductId = productId, Quantity = 1, Price = product.Price });
+            cart.Items.Add(new CartItem { ProductId = productId, Quantity = 1, Price = product.EffectivePriceAt(DateTime.UtcNow) });
         }
 
-        cart.TotalPrice += product.Price;
+        Reprice(cart);
 
         await _cartRepository.SaveChangesAsync();
         return ToDto(cart);
@@ -96,9 +98,9 @@ public class CartService : ICartService
         var item = cart.Items.FirstOrDefault(i => i.ProductId == productId);
         if (item != null)
         {
-            cart.TotalPrice -= item.Price;
             cart.Items.Remove(item);
         }
+        Reprice(cart);
 
         await _cartRepository.SaveChangesAsync();
         return ToDto(cart);
@@ -118,8 +120,8 @@ public class CartService : ICartService
             throw ApiException.BadRequest("Item not found in cart!");
         }
 
-        cart.TotalPrice -= item.Price;
         cart.Items.Remove(item);
+        Reprice(cart);
 
         await _cartRepository.SaveChangesAsync();
         return ToDto(cart);
@@ -149,13 +151,43 @@ public class CartService : ICartService
             throw ApiException.BadRequest("Product information is missing or incomplete!");
         }
 
-        cart.TotalPrice -= item.Price;
         item.Quantity = quantity;
-        item.Price = item.Product.Price * quantity;
-        cart.TotalPrice += item.Price;
+        Reprice(cart);
 
         await _cartRepository.SaveChangesAsync();
         return ToDto(cart);
+    }
+
+    // Recomputes line prices from current product prices (discounts included) and the total
+    // from the lines, instead of adjusting a running total that drifts when prices change or
+    // products are deleted. Returns true when anything changed.
+    private static bool Reprice(Cart cart)
+    {
+        var now = DateTime.UtcNow;
+        var changed = false;
+        foreach (var item in cart.Items)
+        {
+            if (item.Product == null)
+            {
+                // Just added in this request (navigation not loaded); priced by the caller.
+                continue;
+            }
+            var linePrice = item.Product.EffectivePriceAt(now) * item.Quantity;
+            if (item.Price != linePrice)
+            {
+                item.Price = linePrice;
+                changed = true;
+            }
+        }
+
+        // Lines for deleted products aren't loaded (Product query filter), so they drop out here.
+        var total = cart.Items.Sum(i => i.Price);
+        if (cart.TotalPrice != total)
+        {
+            cart.TotalPrice = total;
+            changed = true;
+        }
+        return changed;
     }
 
     private static CartDto ToDto(Cart cart) => new()

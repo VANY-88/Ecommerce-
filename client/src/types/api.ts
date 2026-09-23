@@ -135,3 +135,26 @@ export interface Order {
 export interface CreatePaymentResponse {
   paymentUrl: string;
 }
+
+export interface PaymentStatusInfo {
+  orderId: number;
+  status: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  // The order still needs paying.
+  canRetry: boolean;
+  // Method of the payment still open at the gateway.
+  activeAttemptMethod?: PaymentMethod | null;
+  // Paying again with activeAttemptMethod reuses that open payment. When false while
+  // switchAfterSeconds > 0, every method has to wait.
+  continueAllowed: boolean;
+  // Seconds until a different method can be chosen.
+  switchAfterSeconds: number;
+  // The open payment expired without the gateway confirming whether it was paid.
+  warnPossiblyPaid: boolean;
+}
+
+// Machine-readable codes the API returns (in `errors.code`) with HTTP 409.
+// CONFIRM_ABANDON: a previous payment's outcome is unknown; resend with confirmAbandon
+// once the user accepts it may have gone through.
+export type PaymentErrorCode = "ALREADY_PAID" | "PAYMENT_IN_PROGRESS" | "CONFIRM_ABANDON";

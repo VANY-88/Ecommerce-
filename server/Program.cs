@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading.RateLimiting;
 using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -105,6 +106,11 @@ builder.Services.AddOptions<MomoOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<PaymentOptions>()
+    .Bind(builder.Configuration.GetSection("Payments"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddOptions<FrontendOptions>()
     .Bind(builder.Configuration.GetSection("Frontend"))
     .ValidateDataAnnotations()
@@ -137,8 +143,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<IVnPayService, VnPayService>();
-builder.Services.AddHttpClient<IMomoService, MomoService>();
+builder.Services.AddHttpClient<IVnPayService, VnPayService>(c => c.Timeout = TimeSpan.FromSeconds(5));
+builder.Services.AddHttpClient<IMomoService, MomoService>(c => c.Timeout = TimeSpan.FromSeconds(10));
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -152,6 +158,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
@@ -188,7 +195,23 @@ builder.Services.AddRateLimiter(options =>
         }));
 });
 
+// Render terminates TLS at its proxy; without this every request looks like it comes
+// from the proxy (breaking per-IP rate limiting and the IP sent to payment gateways).
+// ForwardLimit = 1 takes only the entry the proxy itself appended, so clients can't spoof it.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 1;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseForwardedHeaders();
+}
 
 if (app.Environment.IsDevelopment())
 {

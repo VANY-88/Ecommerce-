@@ -16,18 +16,18 @@ public class DashboardService : IDashboardService
 
     public async Task<List<SoldItemDto>> GetSoldItemsAsync()
     {
-        var orders = await _orderRepository.GetAllDetailedAsync();
+        var orders = await _orderRepository.GetSettledDetailedAsync();
 
         return orders
-            .SelectMany(o => o.Cart.Items.Select(i => new SoldItemDto
+            .SelectMany(o => o.Items.Select(i => new SoldItemDto
             {
                 OrderId = o.Id,
                 OrderDate = o.OrderDate,
                 ProductId = i.ProductId,
-                ProductName = i.Product?.Name ?? "(deleted product)",
+                ProductName = i.ProductName,
                 Quantity = i.Quantity,
-                UnitPrice = i.Product?.Price ?? 0,
-                LineTotal = i.Price,
+                UnitPrice = i.UnitPrice,
+                LineTotal = i.LineTotal,
                 CustomerName = CustomerName(o),
             }))
             .OrderByDescending(s => s.OrderDate)
@@ -36,7 +36,7 @@ public class DashboardService : IDashboardService
 
     public async Task<List<MonthlyProfitDto>> GetProfitByMonthAsync()
     {
-        var orders = await _orderRepository.GetAllDetailedAsync();
+        var orders = await _orderRepository.GetSettledDetailedAsync();
 
         return orders
             .GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
@@ -44,9 +44,9 @@ public class DashboardService : IDashboardService
             {
                 Year = g.Key.Year,
                 Month = g.Key.Month,
-                Revenue = g.Sum(o => o.Cart.Items.Sum(i => i.Price)),
-                Cost = g.Sum(o => o.Cart.Items.Sum(i => (i.Product?.CostPrice ?? 0) * i.Quantity)),
-                Profit = g.Sum(o => o.Cart.Items.Sum(i => i.Price - (i.Product?.CostPrice ?? 0) * i.Quantity)),
+                Revenue = g.Sum(o => o.Items.Sum(i => i.LineTotal)),
+                Cost = g.Sum(o => o.Items.Sum(i => i.UnitCost * i.Quantity)),
+                Profit = g.Sum(o => o.Items.Sum(i => i.LineTotal - i.UnitCost * i.Quantity)),
                 OrdersCount = g.Count(),
             })
             .OrderBy(m => m.Year).ThenBy(m => m.Month)
@@ -55,19 +55,18 @@ public class DashboardService : IDashboardService
 
     public async Task<List<BestSellerDto>> GetBestSellersAsync()
     {
-        var orders = await _orderRepository.GetAllDetailedAsync();
+        var orders = await _orderRepository.GetSettledDetailedAsync();
 
         return orders
-            .SelectMany(o => o.Cart.Items)
-            .Where(i => i.Product != null)
+            .SelectMany(o => o.Items)
             .GroupBy(i => i.ProductId)
             .Select(g => new BestSellerDto
             {
                 ProductId = g.Key,
-                ProductName = g.First().Product.Name,
+                ProductName = g.OrderByDescending(i => i.OrderId).First().ProductName,
                 QuantitySold = g.Sum(i => i.Quantity),
-                Revenue = g.Sum(i => i.Price),
-                Profit = g.Sum(i => i.Price - i.Product.CostPrice * i.Quantity),
+                Revenue = g.Sum(i => i.LineTotal),
+                Profit = g.Sum(i => i.LineTotal - i.UnitCost * i.Quantity),
             })
             .OrderByDescending(b => b.QuantitySold)
             .ToList();

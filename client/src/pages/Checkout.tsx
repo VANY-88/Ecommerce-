@@ -63,6 +63,9 @@ function Checkout() {
     return <div className="text-center">Loading...</div>;
   }
 
+  const awaitingPayment =
+    orderDetails.paymentStatus === "Pending" || orderDetails.paymentStatus === "Failed";
+
   return (
     <div
       className="d-flex align-items-center justify-content-center min-vh-100 bg-brown-500"
@@ -73,20 +76,39 @@ function Checkout() {
         style={{ maxWidth: 804 }}
       >
         <div className="text-center d-flex flex-column gap-2">
-          <img
-            src="./assets/orderSuccessful.png"
-            alt="Order Success"
-            className="mx-auto"
-            style={{ width: 140, height: 140 }}
-            loading="lazy"
-            decoding="async"
-          />
-          <h2 className="fs-display-3 text-heading-black fw-bold text-center mb-0">
-            Thank you!
-          </h2>
-          <p className="fs-dm-base fw-semibold text-brown-1000 mb-0">
-            YOUR ORDER HAS BEEN PLACED.
-          </p>
+          {awaitingPayment ? (
+            <>
+              <h2 className="fs-display-3 text-heading-black fw-bold text-center mb-0">
+                Payment {orderDetails.paymentStatus === "Failed" ? "failed" : "pending"}
+              </h2>
+              <p className="fs-dm-base fw-semibold text-brown-1000 mb-0">
+                YOUR ORDER IS SAVED BUT NOT PAID YET.
+              </p>
+              <Button
+                text="Continue Payment"
+                type="button"
+                className="mx-auto mt-2"
+                onClick={() => navigate(`/payment/${orderDetails.id}`)}
+              />
+            </>
+          ) : (
+            <>
+              <img
+                src="./assets/orderSuccessful.png"
+                alt="Order Success"
+                className="mx-auto"
+                style={{ width: 140, height: 140 }}
+                loading="lazy"
+                decoding="async"
+              />
+              <h2 className="fs-display-3 text-heading-black fw-bold text-center mb-0">
+                Thank you!
+              </h2>
+              <p className="fs-dm-base fw-semibold text-brown-1000 mb-0">
+                YOUR ORDER HAS BEEN PLACED.
+              </p>
+            </>
+          )}
         </div>
 
         <div className="d-flex flex-column gap-3">

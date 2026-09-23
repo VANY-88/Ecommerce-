@@ -83,8 +83,8 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/landing" />} />
             <Route path="/cart" element={<PrivateRoute component={Cart} />} />
             <Route path="/shipping" element={<PrivateRoute component={ShippingDetails} />} />
-            <Route path="/payment" element={<PrivateRoute component={Payment} />} />
-            <Route path="/payment/result" element={<PaymentResult />} />
+            <Route path="/payment/result" element={<PrivateRoute component={PaymentResult} />} />
+            <Route path="/payment/:orderId?" element={<PrivateRoute component={Payment} />} />
             <Route path="/checkout/:orderId" element={<PrivateRoute component={Checkout} />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />

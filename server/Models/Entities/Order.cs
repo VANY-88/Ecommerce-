@@ -31,7 +31,12 @@ public class Order
     public string PaymentStatus { get; set; } = "NotApplicable";
     public string? GatewayTransactionId { get; set; }
     public DateTime OrderDate { get; set; }
+    public DateTime? PaidAt { get; set; }
+    // The attempt a failure callback must belong to before it may mark the order Failed.
+    public int? CurrentAttemptId { get; set; }
 
     public Cart Cart { get; set; } = null!;
     public ApplicationUser User { get; set; } = null!;
+    public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+    public ICollection<PaymentAttempt> PaymentAttempts { get; set; } = new List<PaymentAttempt>();
 }

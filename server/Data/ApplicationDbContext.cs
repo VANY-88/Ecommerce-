@@ -13,6 +13,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<PaymentAttempt> PaymentAttempts => Set<PaymentAttempt>();
     public DbSet<AppSettings> AppSettings => Set<AppSettings>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
@@ -80,10 +82,41 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany()
                 .HasForeignKey(o => o.CartId)
                 .OnDelete(DeleteBehavior.Restrict);
+            // One order per cart: a retried or concurrent checkout resumes the existing order.
+            entity.HasIndex(o => o.CartId).IsUnique();
             entity.HasOne(o => o.User)
                 .WithMany()
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<OrderItem>(entity =>
+        {
+            entity.Property(i => i.UnitPrice).HasColumnType("decimal(18,2)");
+            entity.Property(i => i.UnitCost).HasColumnType("decimal(18,2)");
+            entity.Property(i => i.LineTotal).HasColumnType("decimal(18,2)");
+            entity.HasOne(i => i.Order)
+                .WithMany(o => o.Items)
+                .HasForeignKey(i => i.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<PaymentAttempt>(entity =>
+        {
+            entity.Property(a => a.Method).HasMaxLength(20);
+            entity.Property(a => a.TxnRef).HasMaxLength(50);
+            entity.Property(a => a.Status).HasMaxLength(20);
+            entity.Property(a => a.GatewayCreateDate).HasMaxLength(14);
+            entity.HasIndex(a => a.TxnRef).IsUnique();
+            // At most one open attempt per order, so two tabs / a double click can't
+            // both hand out a payable gateway URL.
+            entity.HasIndex(a => a.OrderId, "IX_PaymentAttempts_OrderId_Pending")
+                .IsUnique()
+                .HasFilter("\"Status\" = 'Pending'");
+            entity.HasOne(a => a.Order)
+                .WithMany(o => o.PaymentAttempts)
+                .HasForeignKey(a => a.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<AppSettings>(entity =>

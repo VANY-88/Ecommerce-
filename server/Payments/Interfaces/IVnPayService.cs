@@ -4,7 +4,10 @@ namespace WebShop.Api.Payments.Interfaces;
 
 public interface IVnPayService
 {
-    string CreatePaymentUrl(int orderId, decimal amount, string orderInfo, string clientIpAddress);
+    GatewayPaymentUrl CreatePaymentUrl(GatewayPaymentRequest request);
 
-    bool ValidateSignature(IQueryCollection query, out string responseCode, out string txnRef, out string? transactionNo, out long amount);
+    // Returns null when the signature is invalid.
+    GatewayResult? ParseCallback(IQueryCollection query);
+
+    Task<GatewayResult> QueryAsync(string txnRef, string gatewayCreateDate, string clientIp);
 }

@@ -1,9 +1,12 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using WebShop.Api.Common;
 using WebShop.Api.DTOs.Payments;
+using WebShop.Api.Models.Entities;
+using WebShop.Api.Payments;
 using WebShop.Api.Payments.Interfaces;
 using WebShop.Api.Services.Interfaces;
 
@@ -14,20 +17,26 @@ namespace WebShop.Api.Controllers;
 public class PaymentsController : ControllerBase
 {
     private readonly IOrderService _orderService;
+    private readonly IPaymentService _paymentService;
     private readonly IVnPayService _vnPayService;
     private readonly IMomoService _momoService;
     private readonly FrontendOptions _frontendOptions;
+    private readonly ILogger<PaymentsController> _logger;
 
     public PaymentsController(
         IOrderService orderService,
+        IPaymentService paymentService,
         IVnPayService vnPayService,
         IMomoService momoService,
-        IOptions<FrontendOptions> frontendOptions)
+        IOptions<FrontendOptions> frontendOptions,
+        ILogger<PaymentsController> logger)
     {
         _orderService = orderService;
+        _paymentService = paymentService;
         _vnPayService = vnPayService;
         _momoService = momoService;
         _frontendOptions = frontendOptions.Value;
+        _logger = logger;
     }
 
     private void EnsureOwnerOrAdmin(string userId)
@@ -39,99 +48,111 @@ public class PaymentsController : ControllerBase
         }
     }
 
-    private string FrontendBaseUrl => _frontendOptions.BaseUrl;
-
     [Authorize]
     [HttpPost("vnpay/create")]
-    public async Task<IActionResult> CreateVnPayPayment(CreatePaymentRequestDto dto)
-    {
-        var order = await _orderService.GetByIdDetailedAsync(dto.OrderId);
-        EnsureOwnerOrAdmin(order.UserId);
-
-        if (order.PaymentMethod != "VNPay" || order.PaymentStatus != "Pending")
-        {
-            throw ApiException.BadRequest("This order is not awaiting a VNPay payment.");
-        }
-
-        var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-        var url = _vnPayService.CreatePaymentUrl(order.Id, order.Price, $"Thanh toan don hang {order.Id}", clientIp);
-
-        return Ok(ApiResponse<object>.Ok(new CreatePaymentResponseDto { PaymentUrl = url }));
-    }
-
-    [HttpGet("vnpay/return")]
-    public async Task<IActionResult> VnPayReturn()
-    {
-        var isValid = _vnPayService.ValidateSignature(Request.Query, out var responseCode, out var txnRef, out var transactionNo, out var amount);
-        var success = false;
-
-        if (isValid && responseCode == "00" && int.TryParse(txnRef, out var orderId))
-        {
-            var order = await _orderService.GetByIdDetailedAsync(orderId);
-            // Defense in depth: a valid signature alone isn't enough — the paid amount
-            // must also match what this order actually expects.
-            if (order.Price == amount)
-            {
-                await _orderService.UpdatePaymentResultAsync(orderId, true, transactionNo);
-                success = true;
-            }
-        }
-        else if (isValid && int.TryParse(txnRef, out var failedOrderId))
-        {
-            await _orderService.UpdatePaymentResultAsync(failedOrderId, false, transactionNo);
-        }
-
-        var result = success ? "success" : "fail";
-        return Redirect($"{FrontendBaseUrl}/payment/result?orderId={txnRef}&method=vnpay&result={result}");
-    }
+    public Task<IActionResult> CreateVnPayPayment(CreatePaymentRequestDto dto) =>
+        CreatePayment(dto, PaymentMethods.VnPay);
 
     [Authorize]
     [HttpPost("momo/create")]
-    public async Task<IActionResult> CreateMomoPayment(CreatePaymentRequestDto dto)
+    public Task<IActionResult> CreateMomoPayment(CreatePaymentRequestDto dto) =>
+        CreatePayment(dto, PaymentMethods.Momo);
+
+    private async Task<IActionResult> CreatePayment(CreatePaymentRequestDto dto, string method)
     {
         var order = await _orderService.GetByIdDetailedAsync(dto.OrderId);
         EnsureOwnerOrAdmin(order.UserId);
 
-        if (order.PaymentMethod != "Momo" || order.PaymentStatus != "Pending")
+        var result = await _paymentService.CreateOrReuseAttemptAsync(order.Id, method, HttpContext.GetClientIpV4(), dto.ConfirmAbandon);
+        return Ok(ApiResponse<object>.Ok(result));
+    }
+
+    // Browser redirect back from VNPay. Applies the result too, since the IPN can't reach
+    // a local dev machine; ApplyResultAsync is idempotent so the IPN arriving as well is fine.
+    [HttpGet("vnpay/return")]
+    public async Task<IActionResult> VnPayReturn()
+    {
+        var result = _vnPayService.ParseCallback(Request.Query);
+        if (result == null)
         {
-            throw ApiException.BadRequest("This order is not awaiting a Momo payment.");
+            _logger.LogWarning("VNPay return with an invalid signature");
+            return RedirectToResult(null, "vnpay");
         }
 
-        var url = await _momoService.CreatePaymentUrlAsync(order.Id, order.Price, $"Thanh toan don hang {order.Id}");
+        var applied = await _paymentService.ApplyResultAsync(result);
+        return RedirectToResult(applied.OrderId, "vnpay");
+    }
 
-        return Ok(ApiResponse<object>.Ok(new CreatePaymentResponseDto { PaymentUrl = url }));
+    // Server-to-server notification. Must be registered in the VNPay merchant portal;
+    // the response codes follow VNPay's IPN spec (anything but 00/02 makes VNPay retry).
+    [HttpGet("vnpay/ipn")]
+    public async Task<IActionResult> VnPayIpn()
+    {
+        try
+        {
+            var result = _vnPayService.ParseCallback(Request.Query);
+            if (result == null)
+            {
+                return VnPayIpnResponse("97", "Invalid signature");
+            }
+
+            var applied = await _paymentService.ApplyResultAsync(result);
+            return applied.Status switch
+            {
+                ApplyResultStatus.NotFound => VnPayIpnResponse("01", "Order not found"),
+                ApplyResultStatus.AmountMismatch => VnPayIpnResponse("04", "Invalid amount"),
+                ApplyResultStatus.AlreadyFinal => VnPayIpnResponse("02", "Order already confirmed"),
+                _ => VnPayIpnResponse("00", "Confirm Success"),
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "VNPay IPN failed");
+            return VnPayIpnResponse("99", "Unknown error");
+        }
     }
 
     [HttpGet("momo/return")]
     public async Task<IActionResult> MomoReturn()
     {
-        var query = Request.Query.ToDictionary(kv => kv.Key, kv => kv.Value.ToString());
-        var (success, ourOrderId) = await ProcessMomoCallback(query);
+        var fields = Request.Query.ToDictionary(kv => kv.Key, kv => kv.Value.ToString());
+        var result = _momoService.ParseCallback(fields);
+        if (result == null)
+        {
+            _logger.LogWarning("Momo return with an invalid signature");
+            return RedirectToResult(null, "momo");
+        }
 
-        var result = success ? "success" : "fail";
-        return Redirect($"{FrontendBaseUrl}/payment/result?orderId={ourOrderId}&method=momo&result={result}");
+        var applied = await _paymentService.ApplyResultAsync(result);
+        return RedirectToResult(applied.OrderId, "momo");
     }
 
     [HttpPost("momo/ipn")]
-    public async Task<IActionResult> MomoIpn([FromBody] Dictionary<string, object> payload)
+    public async Task<IActionResult> MomoIpn([FromBody] Dictionary<string, JsonElement> payload)
     {
-        var query = payload.ToDictionary(kv => kv.Key, kv => kv.Value?.ToString() ?? "");
-        await ProcessMomoCallback(query);
-        return Ok();
-    }
-
-    private async Task<(bool success, string? orderId)> ProcessMomoCallback(IReadOnlyDictionary<string, string> query)
-    {
-        var isValid = _momoService.ValidateSignature(query, out var ourOrderId, out var resultCode, out var amount, out var transId);
-        if (!isValid || string.IsNullOrEmpty(ourOrderId) || !int.TryParse(ourOrderId, out var orderId))
+        var fields = payload.ToDictionary(kv => kv.Key, kv => kv.Value.ValueKind == JsonValueKind.String
+            ? kv.Value.GetString() ?? ""
+            : kv.Value.ToString());
+        var result = _momoService.ParseCallback(fields);
+        if (result == null)
         {
-            return (false, ourOrderId);
+            _logger.LogWarning("Momo IPN with an invalid signature");
+            return BadRequest();
         }
 
-        var order = await _orderService.GetByIdDetailedAsync(orderId);
-        var success = resultCode == "0" && order.Price == amount;
-
-        await _orderService.UpdatePaymentResultAsync(orderId, success, transId);
-        return (success, ourOrderId);
+        await _paymentService.ApplyResultAsync(result);
+        // Momo expects 204 No Content to acknowledge the IPN.
+        return NoContent();
     }
+
+    // The client never trusts this redirect for the outcome — it polls the order's
+    // payment status — so only the order id is passed along.
+    private IActionResult RedirectToResult(int? orderId, string method)
+    {
+        var query = orderId == null ? $"method={method}" : $"orderId={orderId}&method={method}";
+        return Redirect($"{_frontendOptions.BaseUrl}/payment/result?{query}");
+    }
+
+    private IActionResult VnPayIpnResponse(string code, string message) =>
+        new JsonResult(new Dictionary<string, string> { ["RspCode"] = code, ["Message"] = message });
 }

@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using WebShop.Api.Common;
+using WebShop.Api.Data;
 using WebShop.Api.DTOs.Carts;
 using WebShop.Api.DTOs.Orders;
 using WebShop.Api.DTOs.Users;
@@ -11,19 +14,20 @@ namespace WebShop.Api.Services;
 
 public class OrderService : IOrderService
 {
-    private static readonly HashSet<string> AllowedPaymentMethods = new() { "COD", "VNPay", "Momo" };
-
     private readonly IOrderRepository _orderRepository;
     private readonly ICartRepository _cartRepository;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ISettingsService _settingsService;
+    private readonly ApplicationDbContext _db;
 
     public OrderService(
         IOrderRepository orderRepository,
         ICartRepository cartRepository,
         UserManager<ApplicationUser> userManager,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        ApplicationDbContext db)
     {
+        _db = db;
         _orderRepository = orderRepository;
         _cartRepository = cartRepository;
         _userManager = userManager;
@@ -54,34 +58,62 @@ public class OrderService : IOrderService
 
     public async Task<OrderDto> CreateAsync(CreateOrderDto dto)
     {
-        var cart = await _cartRepository.GetByIdAsync(dto.CartId);
+        var cart = await _cartRepository.GetByIdWithItemsAsync(dto.CartId);
         if (cart == null)
         {
             throw ApiException.BadRequest("Cart not found!");
         }
+        if (cart.UserId != dto.UserId)
+        {
+            throw ApiException.Forbidden("You can only check out your own cart.");
+        }
         if (cart.Status == "Completed")
         {
-            throw ApiException.BadRequest("Cart is already completed!");
+            // Back button / retry / second tab: resume the order already made from this cart.
+            return await ResumeOrderAsync(dto);
         }
 
-        var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "COD" : dto.PaymentMethod;
-        if (!AllowedPaymentMethods.Contains(paymentMethod))
+        var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? PaymentMethods.Cod : dto.PaymentMethod;
+        if (!PaymentMethods.All.Contains(paymentMethod))
         {
             throw ApiException.BadRequest("Invalid payment method.");
         }
-        var isQrPayment = paymentMethod is "VNPay" or "Momo";
+        var isGatewayPayment = PaymentMethods.IsGateway(paymentMethod);
 
-        // Price is recomputed server-side from the cart's own server-maintained total
-        // (never trust client-supplied Price/PriceInfo) since this amount now drives
-        // a real gateway payment URL. Tax rate and shipping fee likewise come from the
-        // server-side AppSettings row (admin-only to change), not constants or client input,
-        // and the rate actually applied is snapshotted onto the order so it stays accurate
-        // even if the admin changes the rate later.
+        // Price is recomputed server-side from current product prices (discounts included),
+        // never from client-supplied Price/PriceInfo or the cart's running total, since this
+        // amount drives a real gateway payment. Items whose product was deleted are already
+        // excluded by the Product query filter. Tax rate and shipping fee come from the
+        // server-side AppSettings row, and the rate applied is snapshotted onto the order.
+        var now = DateTime.UtcNow;
+        var lines = cart.Items
+            .Where(i => i.Product != null && i.Quantity > 0)
+            .Select(i =>
+            {
+                var unitPrice = i.Product.EffectivePriceAt(now);
+                return new OrderItem
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    Image = i.Product.Image,
+                    UnitPrice = unitPrice,
+                    UnitCost = i.Product.CostPrice,
+                    Quantity = i.Quantity,
+                    LineTotal = unitPrice * i.Quantity,
+                };
+            })
+            .ToList();
+        if (lines.Count == 0)
+        {
+            throw ApiException.BadRequest("Your cart is empty.");
+        }
+
         var settings = await _settingsService.GetAsync();
-        var subtotal = cart.TotalPrice;
+        var subtotal = lines.Sum(l => l.LineTotal);
         var shipping = settings.ShippingFee;
         var taxRate = settings.TaxRate;
-        var tax = Math.Round(subtotal * taxRate, 2);
+        // Half-up, matching how the client rounds the tax it displays.
+        var tax = Math.Round(subtotal * taxRate, 2, MidpointRounding.AwayFromZero);
         var total = subtotal + shipping + tax;
 
         var order = new Order
@@ -97,54 +129,62 @@ public class OrderService : IOrderService
                 TaxRate = taxRate,
                 Total = total,
             },
-            Customer = dto.Customer == null ? null : new OrderCustomer
-            {
-                FirstName = dto.Customer.FirstName,
-                LastName = dto.Customer.LastName,
-                Email = dto.Customer.Email,
-                Phone = dto.Customer.Phone,
-                Address = dto.Customer.Address,
-            },
-            Status = isQrPayment ? "PendingPayment" : "Shipped",
+            Customer = ToCustomer(dto.Customer),
+            Status = isGatewayPayment ? OrderStatuses.PendingPayment : OrderStatuses.Shipped,
             PaymentMethod = paymentMethod,
-            PaymentStatus = isQrPayment ? "Pending" : "NotApplicable",
-            OrderDate = DateTime.UtcNow,
+            PaymentStatus = isGatewayPayment ? PaymentStatuses.Pending : PaymentStatuses.NotApplicable,
+            OrderDate = now,
+            Items = lines,
         };
 
-        cart.Status = "Completed";
+        try
+        {
+            await using var tx = await _db.Database.BeginTransactionAsync();
 
-        await _orderRepository.AddAsync(order);
-        await _orderRepository.SaveChangesAsync();
-        return ToDto(order);
+            // Close the cart atomically: only one request can move it out of Pending.
+            var closed = await _db.Carts
+                .Where(c => c.Id == cart.Id && c.Status == "Pending")
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.Status, "Completed"));
+            if (closed == 0)
+            {
+                await tx.RollbackAsync();
+                _db.ChangeTracker.Clear();
+                return await ResumeOrderAsync(dto);
+            }
+
+            await _orderRepository.AddAsync(order);
+            await _orderRepository.SaveChangesAsync();
+            await tx.CommitAsync();
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            _db.ChangeTracker.Clear();
+            return await ResumeOrderAsync(dto);
+        }
+
+        return await GetByIdDetailedAsync(order.Id);
     }
 
-    public async Task<OrderDto> UpdatePaymentResultAsync(int orderId, bool success, string? gatewayTransactionId)
+    private async Task<OrderDto> ResumeOrderAsync(CreateOrderDto dto)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId);
-        if (order == null)
+        var existing = await _orderRepository.GetByCartIdAsync(dto.CartId);
+        if (existing == null)
         {
-            throw ApiException.BadRequest("Order not found!");
+            throw ApiException.BadRequest("Cart is already completed!");
+        }
+        if (existing.UserId != dto.UserId)
+        {
+            throw ApiException.Forbidden("You can only access your own orders.");
         }
 
-        if (order.PaymentStatus != "Pending")
+        // The user may have gone back and edited the shipping details.
+        if (dto.Customer != null && existing.PaymentStatus is PaymentStatuses.Pending or PaymentStatuses.Failed)
         {
-            // Already finalized (Paid/Failed) — ignore duplicate/late gateway callbacks
-            // so a stale or out-of-order delivery can't regress a Paid order.
-            return ToDto(order);
+            existing.Customer = ToCustomer(dto.Customer);
+            await _orderRepository.SaveChangesAsync();
         }
 
-        order.PaymentStatus = success ? "Paid" : "Failed";
-        if (success)
-        {
-            order.Status = "Shipped";
-        }
-        if (!string.IsNullOrEmpty(gatewayTransactionId))
-        {
-            order.GatewayTransactionId = gatewayTransactionId;
-        }
-
-        await _orderRepository.SaveChangesAsync();
-        return ToDto(order);
+        return await GetByIdDetailedAsync(existing.Id);
     }
 
     public async Task<OrderDto> UpdateAsync(int orderId, UpdateOrderDto dto)
@@ -155,17 +195,17 @@ public class OrderService : IOrderService
             throw ApiException.BadRequest("Order not found!");
         }
 
+        if (dto.Price != order.Price &&
+            (order.PaymentStatus == PaymentStatuses.Paid || await _orderRepository.HasPaymentActivityAsync(orderId)))
+        {
+            // The price is what the gateway was (or is being) asked to charge.
+            throw ApiException.BadRequest("The price can't be changed once a payment has been started or made.");
+        }
+
         order.Price = dto.Price;
         if (dto.Customer != null)
         {
-            order.Customer = new OrderCustomer
-            {
-                FirstName = dto.Customer.FirstName,
-                LastName = dto.Customer.LastName,
-                Email = dto.Customer.Email,
-                Phone = dto.Customer.Phone,
-                Address = dto.Customer.Address,
-            };
+            order.Customer = ToCustomer(dto.Customer);
         }
 
         await _orderRepository.SaveChangesAsync();
@@ -180,6 +220,11 @@ public class OrderService : IOrderService
             throw ApiException.BadRequest("Order not found!");
         }
 
+        if (order.PaymentStatus == PaymentStatuses.Paid || await _orderRepository.HasPaymentActivityAsync(orderId))
+        {
+            throw ApiException.BadRequest("Orders with payment activity can't be deleted.");
+        }
+
         _orderRepository.Remove(order);
         await _orderRepository.SaveChangesAsync();
     }
@@ -189,6 +234,15 @@ public class OrderService : IOrderService
         var orders = await _orderRepository.GetByUserFlatAsync(userId);
         return orders.Select(ToDto).ToList();
     }
+
+    private static OrderCustomer? ToCustomer(OrderCustomerDto? dto) => dto == null ? null : new OrderCustomer
+    {
+        FirstName = dto.FirstName,
+        LastName = dto.LastName,
+        Email = dto.Email,
+        Phone = dto.Phone,
+        Address = dto.Address,
+    };
 
     private static OrderDto ToDto(Order order) => new()
     {
@@ -226,20 +280,21 @@ public class OrderService : IOrderService
             Phone = order.User.PhoneNumber,
             Address = order.User.Address,
         },
-        Cart = order.Cart == null ? null : new CartDto
+        // Items come from the order's snapshot; kept in the CartDto shape the client already reads.
+        Cart = new CartDto
         {
-            Id = order.Cart.Id,
-            UserId = order.Cart.UserId,
-            TotalPrice = order.Cart.TotalPrice,
-            Status = order.Cart.Status,
-            Items = order.Cart.Items.Select(i => new CartItemDto
+            Id = order.CartId,
+            UserId = order.UserId,
+            TotalPrice = order.PriceInfo.Subtotal,
+            Status = "Completed",
+            Items = order.Items.Select(i => new CartItemDto
             {
                 Id = i.Id,
                 ProductId = i.ProductId,
-                ProductName = i.Product?.Name,
-                Image = i.Product?.Image,
+                ProductName = i.ProductName,
+                Image = i.Image,
                 Quantity = i.Quantity,
-                Price = i.Price,
+                Price = i.LineTotal,
             }).ToList(),
         },
     };

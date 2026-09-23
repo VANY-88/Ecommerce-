@@ -20,4 +20,15 @@ public class Product
     public DateTime UpdatedAt { get; set; }
 
     public Category Category { get; set; } = null!;
+
+    public bool IsDiscountActiveAt(DateTime utcNow) =>
+        DiscountPercent > 0 &&
+        DiscountStartDate != null && DiscountEndDate != null &&
+        utcNow >= DiscountStartDate.Value && utcNow <= DiscountEndDate.Value;
+
+    // The price a customer is actually charged right now.
+    public decimal EffectivePriceAt(DateTime utcNow) =>
+        IsDiscountActiveAt(utcNow)
+            ? Math.Round(Price * (1 - DiscountPercent / 100m), 2, MidpointRounding.AwayFromZero)
+            : Price;
 }

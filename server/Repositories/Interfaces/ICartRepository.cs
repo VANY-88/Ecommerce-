@@ -4,6 +4,6 @@ namespace WebShop.Api.Repositories.Interfaces;
 
 public interface ICartRepository : IRepository<Cart>
 {
-    Task<List<Cart>> GetAllByUserWithItemsAsync(string userId);
     Task<Cart?> GetPendingByUserWithItemsAsync(string userId);
+    Task<Cart?> GetByIdWithItemsAsync(int cartId);
 }

@@ -149,6 +149,17 @@ function UserProfile() {
                     <p><strong>Total:</strong> ${order.priceInfo?.total}</p>
                   </div>
                   <p><strong>Status:</strong> {order.status}</p>
+                  <p>
+                    <strong>Payment:</strong> {order.paymentMethod}
+                    {order.paymentStatus !== "NotApplicable" && ` (${order.paymentStatus})`}
+                  </p>
+                  {(order.paymentStatus === "Pending" || order.paymentStatus === "Failed") && (
+                    <Button
+                      text="Continue Payment"
+                      type="button"
+                      onClick={() => navigate(`/payment/${order.id}`)}
+                    />
+                  )}
                 </div>
                 <details className="order-details">
                   <summary>View Products</summary>

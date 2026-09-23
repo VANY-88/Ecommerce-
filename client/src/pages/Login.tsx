@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import api from "../services/api";
@@ -19,6 +19,8 @@ function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ function Login({ onLogin }: LoginProps) {
       saveSession({ id: data.id, name, role, token, refreshToken });
 
       onLogin({ _id: data.id, name, token, role });
-      navigate(role === "Admin" ? "/admin/dashboard" : "/");
+      navigate(role === "Admin" ? "/admin/dashboard" : from || "/", { replace: true });
     } catch (error) {
       toast.error("Please check your login information.");
       console.error("Error logging in:", error);

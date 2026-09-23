@@ -115,7 +115,7 @@ public class ProductService : IProductService
         DiscountPercent = product.DiscountPercent,
         DiscountStartDate = product.DiscountStartDate,
         DiscountEndDate = product.DiscountEndDate,
-        IsDiscountActive = IsDiscountActive(product),
+        IsDiscountActive = product.IsDiscountActiveAt(DateTime.UtcNow),
         Quantity = product.Quantity,
         Description = product.Description,
         Image = product.Image,
@@ -124,15 +124,4 @@ public class ProductService : IProductService
         Status = product.Status,
         IsFeatured = product.IsFeatured,
     };
-
-    private static bool IsDiscountActive(Product product)
-    {
-        if (product.DiscountPercent <= 0 || product.DiscountStartDate == null || product.DiscountEndDate == null)
-        {
-            return false;
-        }
-
-        var now = DateTime.UtcNow;
-        return now >= product.DiscountStartDate.Value && now <= product.DiscountEndDate.Value;
-    }
 }

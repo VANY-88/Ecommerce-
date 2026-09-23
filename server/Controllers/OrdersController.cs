@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebShop.Api.Common;
 using WebShop.Api.DTOs.Orders;
+using WebShop.Api.DTOs.Payments;
 using WebShop.Api.Services.Interfaces;
 
 namespace WebShop.Api.Controllers;
@@ -13,10 +14,12 @@ namespace WebShop.Api.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _service;
+    private readonly IPaymentService _paymentService;
 
-    public OrdersController(IOrderService service)
+    public OrdersController(IOrderService service, IPaymentService paymentService)
     {
         _service = service;
+        _paymentService = paymentService;
     }
 
     private void EnsureOwnerOrAdmin(string userId)
@@ -54,6 +57,27 @@ public class OrdersController : ControllerBase
         EnsureOwnerOrAdmin(dto.UserId);
         var order = await _service.CreateAsync(dto);
         return Ok(ApiResponse<object>.Ok(order, "Order added successfully!"));
+    }
+
+    // Checks with the gateway before answering, so a payment that went through while
+    // the browser showed an error is picked up here.
+    [HttpGet("{orderId}/payment-status")]
+    public async Task<IActionResult> GetPaymentStatus(int orderId)
+    {
+        var order = await _service.GetByIdDetailedAsync(orderId);
+        EnsureOwnerOrAdmin(order.UserId);
+        var status = await _paymentService.GetPaymentStatusAsync(orderId, HttpContext.GetClientIpV4());
+        return Ok(ApiResponse<object>.Ok(status));
+    }
+
+    [HttpPut("{orderId}/payment-method")]
+    public async Task<IActionResult> ChangePaymentMethod(int orderId, ChangePaymentMethodDto dto)
+    {
+        var order = await _service.GetByIdDetailedAsync(orderId);
+        EnsureOwnerOrAdmin(order.UserId);
+        await _paymentService.ChangePaymentMethodAsync(orderId, dto.PaymentMethod, HttpContext.GetClientIpV4(), dto.ConfirmAbandon);
+        var updated = await _service.GetByIdDetailedAsync(orderId);
+        return Ok(ApiResponse<object>.Ok(updated, "Payment method updated."));
     }
 
     [Authorize(Roles = "Admin")]

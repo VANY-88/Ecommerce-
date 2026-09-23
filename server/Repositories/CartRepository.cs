@@ -9,11 +9,11 @@ public class CartRepository : Repository<Cart>, ICartRepository
 {
     public CartRepository(ApplicationDbContext context) : base(context) { }
 
-    public Task<List<Cart>> GetAllByUserWithItemsAsync(string userId) =>
-        Context.Carts.AsNoTracking().Include(c => c.Items).ThenInclude(i => i.Product)
-            .Where(c => c.UserId == userId).ToListAsync();
-
     public Task<Cart?> GetPendingByUserWithItemsAsync(string userId) =>
         Context.Carts.Include(c => c.Items).ThenInclude(i => i.Product)
             .FirstOrDefaultAsync(c => c.UserId == userId && c.Status == "Pending");
+
+    public Task<Cart?> GetByIdWithItemsAsync(int cartId) =>
+        Context.Carts.Include(c => c.Items).ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(c => c.Id == cartId);
 }
